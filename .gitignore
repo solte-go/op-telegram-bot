@@ -6,6 +6,7 @@
 *.dylib
 ./build
 .idea
+*.env
 
 # Test binary, built with `go test -c`
 *.test
