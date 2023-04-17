@@ -1,0 +1,13 @@
+[telegram]
+    host = "api.telegram.org"
+    token = ""
+
+[postgresql]
+    host ="localhost"
+    port = 5432
+    username = ""
+    password = ""
+    dbname = ""
+
+[logging]
+    level = "debug"
