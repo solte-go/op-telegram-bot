@@ -5,20 +5,16 @@ import (
 	"fmt"
 	"io"
 	e "telegram-bot/solte.lab/pkg/errhandler"
+	"telegram-bot/solte.lab/pkg/models"
 )
 
-type Storage interface {
-	Save(p *Page) error
-	PickRandom(username string) (page *Page, err error)
-	Remove(p *Page) error
-	IsExist(p *Page) (bool, error)
-}
+//Save(p *Page) error
+//PickRandom(username string) (page *Page, err error)
+//Remove(p *Page) error
+//IsExist(p *Page) (bool, error)
 
-type Page struct {
-	UserID   int
-	UserName string
-	URLId    int
-	URL      string
+type Storage interface {
+	PickRandomWords(user *models.User) (page *Words, err error)
 }
 
 func (p *Page) Hash() (string, error) {

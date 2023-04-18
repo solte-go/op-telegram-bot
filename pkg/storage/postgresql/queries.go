@@ -3,46 +3,77 @@ package postgresql
 import (
 	"database/sql"
 	"fmt"
-	"math/rand"
 	e "telegram-bot/solte.lab/pkg/errhandler"
 	"telegram-bot/solte.lab/pkg/storage"
-	"time"
 )
 
-func (s *Storage) Save(p *storage.Page) (err error) {
-	defer func() { err = e.WrapIfErr("can't save page to database", err) }()
+//func (s *Storage) Save(p *storage.Page) (err error) {
+//	defer func() { err = e.WrapIfErr("can't save page to database", err) }()
+//
+//	id, err := s.getUserID(p.UserName)
+//	if err == sql.ErrNoRows {
+//		id, err = s.InsertUserReturnID(p)
+//		if err != nil {
+//			return err
+//		}
+//	}
+//
+//	if err != nil {
+//		return err
+//	}
+//
+//	_, err = s.db.Exec(`INSERT INTO links (user_id, link) VALUES ($1, $2)`, id, p.URL)
+//	if err != nil {
+//		return err
+//	}
+//
+//	return nil
+//}
 
-	id, err := s.getUserID(p.UserName)
-	if err == sql.ErrNoRows {
-		id, err = s.InsertUserReturnID(p)
-		if err != nil {
-			return err
-		}
-	}
+//func (s *Storage) PickRandom(username string) (page *storage.Page, err error) {
+//	defer func() { err = e.WrapIfErr("can't pick random page from file", err) }()
+//
+//	query := `SELECT user_name, links.link, links.id
+//	FROM users
+//	JOIN links on links.user_id = users.id
+//	WHERE user_name = $1;`
+//
+//	var pages []storage.Page
+//
+//	rows, err := s.db.Query(query, username)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	defer rows.Close()
+//
+//	for rows.Next() {
+//		var p storage.Page
+//		err = rows.Scan(&p.UserName, &p.URL, &p.URLId)
+//		if err != nil {
+//			return nil, err
+//		}
+//		pages = append(pages, p)
+//	}
+//
+//	if len(pages) == 0 {
+//		return nil, storage.ErrNoSavedPages
+//	}
+//
+//	source := rand.NewSource(time.Now().UnixNano())
+//	rand.New(source)
+//	n := rand.Intn(len(pages))
+//
+//	page = &pages[n]
+//
+//	return page, nil
+//}
 
-	if err != nil {
-		return err
-	}
+func (s *Storage) GetWords(letter string) (pages []*storage.Words, err error) {
 
-	_, err = s.db.Exec(`INSERT INTO links (user_id, link) VALUES ($1, $2)`, id, p.URL)
-	if err != nil {
-		return err
-	}
+	query := `SELECT topic, suomi, russian, english FROM words WHERE letter=$1`
 
-	return nil
-}
-
-func (s *Storage) PickRandom(username string) (page *storage.Page, err error) {
-	defer func() { err = e.WrapIfErr("can't pick random page from file", err) }()
-
-	query := `SELECT user_name, links.link, links.id
-	FROM users
-	JOIN links on links.user_id = users.id
-	WHERE user_name = $1;`
-
-	var pages []storage.Page
-
-	rows, err := s.db.Query(query, username)
+	rows, err := s.db.Query(query, letter)
 	if err != nil {
 		return nil, err
 	}
@@ -50,25 +81,19 @@ func (s *Storage) PickRandom(username string) (page *storage.Page, err error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var p storage.Page
-		err = rows.Scan(&p.UserName, &p.URL, &p.URLId)
+		var word storage.Words
+		err = rows.Scan(&word.Topic, &word.Suomi, &word.Russian, &word.English)
 		if err != nil {
 			return nil, err
 		}
-		pages = append(pages, p)
+		pages = append(pages, &word)
 	}
 
 	if len(pages) == 0 {
 		return nil, storage.ErrNoSavedPages
 	}
 
-	source := rand.NewSource(time.Now().UnixNano())
-	rand.New(source)
-	n := rand.Intn(len(pages))
-
-	page = &pages[n]
-
-	return page, nil
+	return pages, err
 }
 
 func (s *Storage) Remove(p *storage.Page) error {
@@ -95,6 +120,29 @@ func (s *Storage) IsExist(p *storage.Page) (bool, error) {
 	return s.checkLink(p)
 }
 
+func (s *Storage) GetAlphabet() ([]string, error) {
+
+	var alphabet []string
+	query := `SELECT DISTINCT letter FROM words`
+
+	rows, err := s.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var letter string
+		err = rows.Scan(&letter)
+		if err != nil {
+			return nil, err
+		}
+		alphabet = append(alphabet, letter)
+	}
+	return alphabet, nil
+}
+
 func (s *Storage) getUserID(userName string) (id int, err error) {
 	query := `SELECT id FROM users WHERE user_name = $1`
 
@@ -115,28 +163,4 @@ func (s *Storage) checkLink(p *storage.Page) (bool, error) {
 	}
 
 	return count > 0, nil
-}
-
-func (s *Storage) InsertUserReturnID(p *storage.Page) (int, error) {
-	var userID int
-	tx, err := s.db.Begin()
-
-	stmt, err := tx.Prepare(`INSERT INTO "users" (user_name) VALUES ($1) RETURNING id`)
-	if err != nil {
-		return 0, err
-	}
-	defer stmt.Close()
-
-	err = stmt.QueryRow(p.UserName).Scan(&userID)
-	if err != nil {
-		return 0, err
-	}
-
-	err = tx.Commit()
-
-	if err != nil {
-		return 0, err
-	}
-
-	return userID, nil
 }

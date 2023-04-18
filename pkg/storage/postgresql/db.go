@@ -5,6 +5,7 @@ import (
 	"fmt"
 	_ "github.com/lib/pq"
 	"telegram-bot/solte.lab/pkg/config"
+	"telegram-bot/solte.lab/pkg/storage/postgresql/internal"
 )
 
 type Storage struct {
@@ -64,26 +65,7 @@ func (s *Storage) DropTables() error {
 }
 
 func (s *Storage) init() error {
-	q := `CREATE TABLE IF NOT EXISTS public.links (
-    	id SERIAL PRIMARY KEY,
-    	user_id integer NOT NULL,
-   		link TEXT NOT NULL CONSTRAINT "Links_pk" UNIQUE,
-    	create_at timestamp DEFAULT CURRENT_TIMESTAMP
-	);
-
-	alter table links
-    	owner to postgres;
-
-	CREATE TABLE IF NOT EXISTS public.users (
-    	id SERIAL PRIMARY KEY,
-    	user_name varchar not null
-        constraint "Users_pk"
-            unique
-	);
-
-	alter table users
-    	owner to postgres;
-`
+	q := internal.CreateTables()
 	_, err := s.db.Exec(q)
 	if err != nil {
 		return fmt.Errorf("can't create table: %w", err)

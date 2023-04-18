@@ -6,6 +6,7 @@ import (
 	"telegram-bot/solte.lab/pkg/clients/telegram"
 	e "telegram-bot/solte.lab/pkg/errhandler"
 	"telegram-bot/solte.lab/pkg/events"
+	"telegram-bot/solte.lab/pkg/models"
 	"telegram-bot/solte.lab/pkg/storage"
 )
 
@@ -66,7 +67,13 @@ func (p *Processor) processMessage(event events.Event) error {
 	if err != nil {
 		return e.Wrap("can't process message", err)
 	}
-	if err := p.doCmd(event.Text, meta.ChatID, meta.Username); err != nil {
+
+	user := &models.User{
+		Name:   meta.Username,
+		ChatID: meta.ChatID,
+	}
+
+	if err := p.doCmd(event.Text, user); err != nil {
 		return e.Wrap("can't process message", err)
 	}
 
