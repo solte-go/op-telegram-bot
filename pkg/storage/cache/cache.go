@@ -36,11 +36,14 @@ func New(ctx context.Context, conf *config.PostgreSQL) (*StorageCache, error) {
 
 type databaseContract interface {
 	GetWords(letter string) (page []*storage.Words, err error)
+	GetWordsFromTopic(topicTitle string) (words []*storage.Words, err error)
 	GetAlphabet() ([]string, error)
+	GetTopics() ([]string, error)
 	GetUser(user *models.User) (err error)
 	InsertUser(user *models.User) (err error)
 	UserExist(user *models.User) (bool, error)
 	UpdateUserLang(user *models.User) error
+	UpdateUserTopic(user *models.User) error
 }
 
 type cacheContainer interface {
@@ -71,9 +74,52 @@ func (s *StorageCache) SetUserLanguage(user *models.User) (err error) {
 	return s.db.UpdateUserLang(user)
 }
 
-func (s *StorageCache) PickRandomWords(user *models.User) (page *storage.Words, err error) {
-	if s.dialect.Sync() {
-		s.dialect.Alphabet, err = s.db.GetAlphabet()
+func (s *StorageCache) GetTopics() (topics []string, err error) {
+	if s.dialect.SyncTopics() {
+		s.dialect.Topics.Titles, err = s.db.GetTopics()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	topics = s.dialect.Topics.Titles
+
+	return topics, nil
+}
+
+func (s *StorageCache) SetUserTopic(user *models.User, topic string) (err error) {
+	defer func() { err = e.WrapIfErr("can't update user settings", err) }()
+
+	if err = s.dialect.Topics.CheckTopic(topic); err != nil {
+		return err
+	}
+
+	user.Topic = topic
+
+	ok, err := s.db.UserExist(user)
+	if err != nil {
+		return err
+	}
+
+	if !ok {
+		return s.db.InsertUser(user)
+	}
+
+	err = s.cache.UpdateUser(user)
+	if err != nil {
+		if !errors.Is(err, syncContainer.ErrorNoUserForUpdate) {
+			return err
+		}
+	}
+
+	return s.db.UpdateUserTopic(user)
+}
+
+func (s *StorageCache) PickRandomFromTopic(user *models.User) (page *storage.Words, err error) {
+	defer func() { err = e.WrapIfErr("can't get topics form db", err) }()
+
+	if s.dialect.SyncTopics() {
+		s.dialect.Topics.Titles, err = s.db.GetTopics()
 		if err != nil {
 			return nil, err
 		}
@@ -84,7 +130,45 @@ func (s *StorageCache) PickRandomWords(user *models.User) (page *storage.Words, 
 		user.Topic = cachedUser.Topic
 		user.Language = cachedUser.Language
 	} else {
-		err := s.db.GetUser(user)
+		err = s.db.GetUser(user)
+		if err != nil {
+			return nil, err
+		}
+		s.cache.AddUser(user)
+	}
+
+	if user.Topic != "" && !user.IsTopicDefault() {
+		var res []*storage.Words
+		res, err = s.db.GetWordsFromTopic(user.Topic)
+		if err != nil {
+			return nil, err
+		}
+
+		source := rand.NewSource(time.Now().UnixNano())
+		rand.New(source)
+
+		n := rand.Intn(len(res))
+		rndWord := res[n]
+		return rndWord, nil
+	}
+
+	return s.pickRandomWords(user)
+}
+
+func (s *StorageCache) pickRandomWords(user *models.User) (page *storage.Words, err error) {
+	if s.dialect.SyncAlphabet() {
+		s.dialect.Alphabet.Letters, err = s.db.GetAlphabet()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	cachedUser, ok := s.cache.GetUser(user.Name)
+	if ok {
+		user.Topic = cachedUser.Topic
+		user.Language = cachedUser.Language
+	} else {
+		err = s.db.GetUser(user)
 		if err != nil {
 			return nil, err
 		}
@@ -93,9 +177,9 @@ func (s *StorageCache) PickRandomWords(user *models.User) (page *storage.Words, 
 
 	source := rand.NewSource(time.Now().UnixNano())
 	rand.New(source)
-	n := rand.Intn(len(s.dialect.Alphabet))
+	n := rand.Intn(len(s.dialect.Alphabet.Letters))
 
-	res, err := s.db.GetWords(s.dialect.Alphabet[n])
+	res, err := s.db.GetWords(s.dialect.Alphabet.Letters[n])
 	if err != nil {
 		return nil, err
 	}
@@ -105,25 +189,3 @@ func (s *StorageCache) PickRandomWords(user *models.User) (page *storage.Words, 
 
 	return rndWord, nil
 }
-
-//func (s *StorageCache) Remove(p *storage.Page) error {
-//
-//	return nil
-//}
-//
-//func (s *StorageCache) IsExist(p *storage.Page) (bool, error) {
-//
-//	return s.checkLink(p)
-//}
-
-//func (s *StorageCache) Save(p *storage.Page) (err error) {
-//	defer func() { err = e.WrapIfErr("can't save page to database", err) }()
-//
-//	return nil
-//}
-//
-//func (s *StorageCache) PickRandom(username string) (page *storage.Page, err error) {
-//	defer func() { err = e.WrapIfErr("can't pick random page from file", err) }()
-//
-//	return page, nil
-//}

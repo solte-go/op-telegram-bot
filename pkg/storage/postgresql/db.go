@@ -54,7 +54,7 @@ func (s *Storage) Close() error {
 }
 
 func (s *Storage) DropTables() error {
-	q := `DROP TABLE IF EXISTS users, links CASCADE;`
+	q := `DROP TABLE IF EXISTS users, words, links CASCADE;`
 
 	_, err := s.db.Exec(q)
 	if err != nil {

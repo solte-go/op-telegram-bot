@@ -14,8 +14,10 @@ import (
 //IsExist(p *Page) (bool, error)
 
 type Storage interface {
-	PickRandomWords(user *models.User) (page *Words, err error)
+	GetTopics() (topics []string, err error)
+	PickRandomFromTopic(user *models.User) (page *Words, err error)
 	SetUserLanguage(user *models.User) (err error)
+	SetUserTopic(user *models.User, topic string) (err error)
 }
 
 func (p *Page) Hash() (string, error) {

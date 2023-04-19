@@ -7,8 +7,8 @@ func NewTestConfig() *Config {
 		PostgreSQL: &PostgreSQL{
 			Host:     "localhost",
 			Port:     5432,
-			Username: "postgres",
-			Password: "supra**",
+			Username: "dev",
+			Password: "devsupra**",
 			DBName:   "telegram_dev",
 		},
 		TG: &TG{

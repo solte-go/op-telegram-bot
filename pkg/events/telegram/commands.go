@@ -10,6 +10,7 @@ import (
 	e "telegram-bot/solte.lab/pkg/errhandler"
 	"telegram-bot/solte.lab/pkg/models"
 	"telegram-bot/solte.lab/pkg/storage"
+	"telegram-bot/solte.lab/pkg/storage/dialect"
 	"time"
 )
 
@@ -17,19 +18,16 @@ const (
 	CmdStart          = "/start"
 	CmdHelp           = "/help"
 	CmdRndWords       = "/words"
-	CmdTopic          = "/topic"
+	CmdTopics         = "/topics"
 	CmdSetTopic       = "/setTopic"
 	CmdSetLanguage    = "/setLang"
 	CmdPhraseOfTheDay = "/phraseOfDay"
 )
 
 func (p *Processor) doCmd(text string, user *models.User) error {
-	p.logger.Info("Get new command", zap.String("content", text), zap.String("From User", user.Name))
+	p.logger.Debug("get new command", zap.String("content", text), zap.String("From User", user.Name))
 
 	cmd, arg := parseCommand(text)
-	//if isAddCmd(text) {
-	//	return p.savePage(chatID, text, username)
-	//}
 
 	switch cmd {
 	case CmdStart:
@@ -40,8 +38,12 @@ func (p *Processor) doCmd(text string, user *models.User) error {
 		return p.randomWords(user)
 	case CmdPhraseOfTheDay:
 		return p.phraseOfTheDay(user, arg)
+	case CmdTopics:
+		return p.sendTopics(user)
 	case CmdSetLanguage:
 		return p.setLang(user, arg)
+	case CmdSetTopic:
+		return p.setTopic(user, arg)
 	default:
 		return p.tg.SendMessage(user.ChatID, msgUnknownCommand)
 	}
@@ -50,9 +52,10 @@ func (p *Processor) doCmd(text string, user *models.User) error {
 func (p *Processor) randomWords(user *models.User) (err error) {
 	defer func() { err = e.WrapIfErr("can't execute command: random page", err) }()
 
+	var word *storage.Words
 	sendMsg := newMessageSender(user.ChatID, p.tg)
 
-	word, err := p.storage.PickRandomWords(user)
+	word, err = p.storage.PickRandomFromTopic(user)
 	if err != nil && !errors.Is(err, storage.ErrNoSavedPages) {
 		return err
 	}
@@ -120,6 +123,57 @@ func (p *Processor) setLang(user *models.User, arg string) (err error) {
 	}
 
 	err = p.storage.SetUserLanguage(user)
+	if err != nil {
+		return err
+	}
+
+	err = sendMsg(msgSettingApplied)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *Processor) sendTopics(user *models.User) (err error) {
+	defer func() { err = e.WrapIfErr("can't execute command: send topics", err) }()
+
+	sendMsg := newMessageSender(user.ChatID, p.tg)
+
+	topics, err := p.storage.GetTopics()
+	if err != nil {
+		return err
+	}
+
+	if len(topics) == 0 {
+		err = sendMsg(msgNoDataInStorage)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+	if err = sendMsg(concatStrings(topics...)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *Processor) setTopic(user *models.User, arg string) (err error) {
+	defer func() { err = e.WrapIfErr("can't execute command: set topic", err) }()
+
+	sendMsg := newMessageSender(user.ChatID, p.tg)
+
+	err = p.storage.SetUserTopic(user, arg)
+	if err != nil && errors.Is(err, dialect.ErrUnsupportedTopic) {
+		err = sendMsg(msgUnsupportedTopic)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
 	if err != nil {
 		return err
 	}

@@ -23,13 +23,20 @@ func (u *User) SetDefaults() {
 	if u.Language == "" {
 		u.Language = defaultLanguage
 	}
-	if u.Language == "" {
+	if u.Topic == "" {
 		u.Topic = defaultTopic
 	}
 }
 
 func (u *User) IsLanguageEnglish() bool {
 	if u.Language == en {
+		return true
+	}
+	return false
+}
+
+func (u *User) IsTopicDefault() bool {
+	if u.Topic == defaultTopic {
 		return true
 	}
 	return false

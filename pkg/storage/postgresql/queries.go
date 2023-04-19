@@ -6,69 +6,7 @@ import (
 	"telegram-bot/solte.lab/pkg/storage"
 )
 
-//func (s *Storage) Save(p *storage.Page) (err error) {
-//	defer func() { err = e.WrapIfErr("can't save page to database", err) }()
-//
-//	id, err := s.getUserID(p.UserName)
-//	if err == sql.ErrNoRows {
-//		id, err = s.InsertUserReturnID(p)
-//		if err != nil {
-//			return err
-//		}
-//	}
-//
-//	if err != nil {
-//		return err
-//	}
-//
-//	_, err = s.db.Exec(`INSERT INTO links (user_id, link) VALUES ($1, $2)`, id, p.URL)
-//	if err != nil {
-//		return err
-//	}
-//
-//	return nil
-//}
-
-//func (s *Storage) PickRandom(username string) (page *storage.Page, err error) {
-//	defer func() { err = e.WrapIfErr("can't pick random page from file", err) }()
-//
-//	query := `SELECT user_name, links.link, links.id
-//	FROM users
-//	JOIN links on links.user_id = users.id
-//	WHERE user_name = $1;`
-//
-//	var pages []storage.Page
-//
-//	rows, err := s.db.Query(query, username)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	defer rows.Close()
-//
-//	for rows.Next() {
-//		var p storage.Page
-//		err = rows.Scan(&p.UserName, &p.URL, &p.URLId)
-//		if err != nil {
-//			return nil, err
-//		}
-//		pages = append(pages, p)
-//	}
-//
-//	if len(pages) == 0 {
-//		return nil, storage.ErrNoSavedPages
-//	}
-//
-//	source := rand.NewSource(time.Now().UnixNano())
-//	rand.New(source)
-//	n := rand.Intn(len(pages))
-//
-//	page = &pages[n]
-//
-//	return page, nil
-//}
-
-func (s *Storage) GetWords(letter string) (pages []*storage.Words, err error) {
+func (s *Storage) GetWords(letter string) (words []*storage.Words, err error) {
 
 	query := `SELECT topic, suomi, russian, english FROM words WHERE letter=$1`
 
@@ -85,14 +23,68 @@ func (s *Storage) GetWords(letter string) (pages []*storage.Words, err error) {
 		if err != nil {
 			return nil, err
 		}
-		pages = append(pages, &word)
+		words = append(words, &word)
 	}
 
-	if len(pages) == 0 {
+	if len(words) == 0 {
 		return nil, storage.ErrNoSavedPages
 	}
 
-	return pages, err
+	return words, err
+}
+
+func (s *Storage) GetWordsFromTopic(topicTitle string) (words []*storage.Words, err error) {
+
+	query := `SELECT topic, suomi, russian, english FROM words WHERE topic=$1`
+
+	rows, err := s.db.Query(query, topicTitle)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var word storage.Words
+		err = rows.Scan(&word.Topic, &word.Suomi, &word.Russian, &word.English)
+		if err != nil {
+			return nil, err
+		}
+		words = append(words, &word)
+	}
+
+	if len(words) == 0 {
+		return nil, storage.ErrNoSavedPages
+	}
+
+	return words, err
+}
+
+func (s *Storage) GetTopics() ([]string, error) {
+
+	var topics []string
+	query := `SELECT DISTINCT topic FROM words`
+
+	rows, err := s.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var title string
+		err = rows.Scan(&title)
+		if err != nil {
+			return nil, err
+		}
+
+		topics = append(topics, title)
+	}
+
+	topics = append(topics, "all")
+
+	return topics, nil
 }
 
 func (s *Storage) Remove(p *storage.Page) error {

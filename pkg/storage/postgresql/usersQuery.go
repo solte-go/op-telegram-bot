@@ -38,11 +38,10 @@ func (s *Storage) GetUser(user *models.User) (err error) {
 
 	err = s.db.QueryRow(query, user.Name).Scan(&user.Topic, &user.Language)
 	if err == sql.ErrNoRows {
-		_, err = s.insertNewUserReturnID(user.Name)
+		err = s.InsertUser(user)
 		if err != nil {
 			return err
 		}
-		user.SetDefaults()
 		return nil
 	}
 
@@ -79,6 +78,30 @@ func (s *Storage) UpdateUserLang(user *models.User) error {
 	return nil
 }
 
+func (s *Storage) UpdateUserTopic(user *models.User) error {
+	query := `UPDATE users SET topic = $1 WHERE user_name = $2;`
+
+	_, err := s.db.Exec(query, user.Topic, user.Name)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Storage) UserExist(user *models.User) (bool, error) {
+	var count int
+
+	query := `SELECT COUNT(*) 
+	FROM users WHERE user_name = $1`
+
+	if err := s.db.QueryRow(query, user.Name).Scan(&count); err != nil {
+		return false, fmt.Errorf("can't check if user exists: %w", err)
+	}
+
+	return count > 0, nil
+}
+
 func (s *Storage) insertNewUserReturnID(username string) (int, error) {
 	var userID int
 	tx, err := s.db.Begin()
@@ -101,17 +124,4 @@ func (s *Storage) insertNewUserReturnID(username string) (int, error) {
 	}
 
 	return userID, nil
-}
-
-func (s *Storage) UserExist(user *models.User) (bool, error) {
-	var count int
-
-	query := `SELECT COUNT(*) 
-	FROM users WHERE user_name = $1`
-
-	if err := s.db.QueryRow(query, user.Name).Scan(&count); err != nil {
-		return false, fmt.Errorf("can't check if user exists: %w", err)
-	}
-
-	return count > 0, nil
 }
