@@ -11,9 +11,14 @@ import (
 
 type Config struct {
 	Environment string
+	API         *API        `mapstructure:"api"`
 	Logging     *Logging    `mapstructure:"logging"`
 	PostgreSQL  *PostgreSQL `mapstructure:"postgresql"`
 	TG          *TG         `mapstructure:"telegram"`
+}
+
+type API struct {
+	Port int `mapstructure:"port"`
 }
 
 type TG struct {

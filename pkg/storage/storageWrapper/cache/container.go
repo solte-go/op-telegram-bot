@@ -109,7 +109,7 @@ func (c *Container) syncUsersCache() {
 
 	c.clearUp()
 
-	c.logger.Debug("sync users storageWrapper completed")
+	c.logger.Debug("sync users cache completed")
 }
 
 func (c *Container) clearUp() {

@@ -55,7 +55,7 @@ func (p *Processor) randomWords(user *models.User) (err error) {
 	var word *storage.Words
 	sendMsg := newMessageSender(user.ChatID, p.tg)
 
-	word, err = p.storage.PickRandomFromTopic(user)
+	word, err = p.storage.PickRandomWord(user)
 	if err != nil && !errors.Is(err, storage.ErrNoSavedPages) {
 		return err
 	}

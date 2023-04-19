@@ -1,0 +1,27 @@
+version: "3.7"
+services:
+  prometheus:
+    image: "prom/prometheus"
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    expose:
+      - 9090
+    volumes:
+      - ./prometheus_cfg.yaml:/etc/prometheus/cfg.yaml
+    command:
+      - "--storage.tsdb.retention.time=30d"
+      - "--config.file=/etc/prometheus/cfg.yaml"
+    networks:
+      - bot-network
+
+  postgres:
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+    volumes:
+      - ./data/pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - bot-network

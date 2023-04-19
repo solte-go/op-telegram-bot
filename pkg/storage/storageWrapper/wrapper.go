@@ -16,8 +16,7 @@ import (
 
 type StorageCache struct {
 	dialect *dialect.Dialect
-	db      contract
-	cache   cacheContainer
+	storage *contract
 }
 
 func New(ctx context.Context, conf *config.PostgreSQL) (*StorageCache, error) {
@@ -29,14 +28,22 @@ func New(ctx context.Context, conf *config.PostgreSQL) (*StorageCache, error) {
 
 	return &StorageCache{
 		dialect: d,
-		db:      st,
-		cache:   cache.New(ctx, st),
+		storage: newContract(ctx, st),
 	}, nil
 }
 
-type contract interface {
-	userContract
-	dialectContract
+type contract struct {
+	user    userContract
+	dialect dialectContract
+	cache   cacheContract
+}
+
+func newContract(ctx context.Context, st *postgresql.Storage) *contract {
+	return &contract{
+		user:    st,
+		dialect: st,
+		cache:   cache.New(ctx, st),
+	}
 }
 
 type userContract interface {
@@ -54,7 +61,7 @@ type dialectContract interface {
 	GetTopics() ([]string, error)
 }
 
-type cacheContainer interface {
+type cacheContract interface {
 	AddUser(user *models.User)
 	GetUser(name string) (models.User, bool)
 	UpdateUser(user *models.User) error
@@ -63,28 +70,28 @@ type cacheContainer interface {
 func (s *StorageCache) SetUserLanguage(user *models.User) (err error) {
 	defer func() { err = e.WrapIfErr("can't update user settings", err) }()
 
-	ok, err := s.db.UserExist(user)
+	ok, err := s.storage.user.UserExist(user)
 	if err != nil {
 		return err
 	}
 
 	if !ok {
-		return s.db.InsertUser(user)
+		return s.storage.user.InsertUser(user)
 	}
 
-	err = s.cache.UpdateUser(user)
+	err = s.storage.cache.UpdateUser(user)
 	if err != nil {
 		if !errors.Is(err, cache.ErrorNoUserForUpdate) {
 			return err
 		}
 	}
 
-	return s.db.UpdateUserLang(user)
+	return s.storage.user.UpdateUserLang(user)
 }
 
 func (s *StorageCache) GetTopics() (topics []string, err error) {
 	if s.dialect.SyncTopics() {
-		s.dialect.Topics.Titles, err = s.db.GetTopics()
+		s.dialect.Topics.Titles, err = s.storage.dialect.GetTopics()
 		if err != nil {
 			return nil, err
 		}
@@ -104,50 +111,50 @@ func (s *StorageCache) SetUserTopic(user *models.User, topic string) (err error)
 
 	user.Topic = topic
 
-	ok, err := s.db.UserExist(user)
+	ok, err := s.storage.user.UserExist(user)
 	if err != nil {
 		return err
 	}
 
 	if !ok {
-		return s.db.InsertUser(user)
+		return s.storage.user.InsertUser(user)
 	}
 
-	err = s.cache.UpdateUser(user)
+	err = s.storage.cache.UpdateUser(user)
 	if err != nil {
 		if !errors.Is(err, cache.ErrorNoUserForUpdate) {
 			return err
 		}
 	}
 
-	return s.db.UpdateUserTopic(user)
+	return s.storage.user.UpdateUserTopic(user)
 }
 
-func (s *StorageCache) PickRandomFromTopic(user *models.User) (page *storage.Words, err error) {
+func (s *StorageCache) PickRandomWord(user *models.User) (page *storage.Words, err error) {
 	defer func() { err = e.WrapIfErr("can't get topics form db", err) }()
 
 	if s.dialect.SyncTopics() {
-		s.dialect.Topics.Titles, err = s.db.GetTopics()
+		s.dialect.Topics.Titles, err = s.storage.dialect.GetTopics()
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	cachedUser, ok := s.cache.GetUser(user.Name)
+	cachedUser, ok := s.storage.cache.GetUser(user.Name)
 	if ok {
 		user.Topic = cachedUser.Topic
 		user.Language = cachedUser.Language
 	} else {
-		err = s.db.GetUser(user)
+		err = s.storage.user.GetUser(user)
 		if err != nil {
 			return nil, err
 		}
-		s.cache.AddUser(user)
+		s.storage.cache.AddUser(user)
 	}
 
 	if user.Topic != "" && !user.IsTopicDefault() {
 		var res []*storage.Words
-		res, err = s.db.GetWordsFromTopic(user.Topic)
+		res, err = s.storage.dialect.GetWordsFromTopic(user.Topic)
 		if err != nil {
 			return nil, err
 		}
@@ -160,12 +167,12 @@ func (s *StorageCache) PickRandomFromTopic(user *models.User) (page *storage.Wor
 		return rndWord, nil
 	}
 
-	return s.pickRandomWords()
+	return s.randomWordsWithoutTopic()
 }
 
-func (s *StorageCache) pickRandomWords() (page *storage.Words, err error) {
+func (s *StorageCache) randomWordsWithoutTopic() (page *storage.Words, err error) {
 	if s.dialect.SyncAlphabet() {
-		s.dialect.Alphabet.Letters, err = s.db.GetAlphabet()
+		s.dialect.Alphabet.Letters, err = s.storage.dialect.GetAlphabet()
 		if err != nil {
 			return nil, err
 		}
@@ -175,7 +182,7 @@ func (s *StorageCache) pickRandomWords() (page *storage.Words, err error) {
 	rand.New(source)
 	n := rand.Intn(len(s.dialect.Alphabet.Letters))
 
-	res, err := s.db.GetWords(s.dialect.Alphabet.Letters[n])
+	res, err := s.storage.dialect.GetWords(s.dialect.Alphabet.Letters[n])
 	if err != nil {
 		return nil, err
 	}

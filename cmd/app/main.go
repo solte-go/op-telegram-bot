@@ -7,6 +7,8 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"telegram-bot/solte.lab/pkg/api"
+	"telegram-bot/solte.lab/pkg/api/handlers/metrics"
 	tgClient "telegram-bot/solte.lab/pkg/clients/telegram"
 	"telegram-bot/solte.lab/pkg/config"
 	eventConsumer "telegram-bot/solte.lab/pkg/consumer/event-consumer"
@@ -56,6 +58,9 @@ func main() {
 	if err != nil {
 		logger.Fatal("can't initialize storage", zap.Error(err))
 	}
+
+	server := api.New(logger)
+	go server.Run(ctx, conf.API.Port, &metrics.Worker{})
 
 	eventProcessor := telegram.New(tg, s, logger)
 
