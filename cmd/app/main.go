@@ -12,7 +12,7 @@ import (
 	eventConsumer "telegram-bot/solte.lab/pkg/consumer/event-consumer"
 	"telegram-bot/solte.lab/pkg/events/telegram"
 	"telegram-bot/solte.lab/pkg/logging"
-	"telegram-bot/solte.lab/pkg/storage/cache"
+	"telegram-bot/solte.lab/pkg/storage/storageWrapper"
 )
 
 var env string
@@ -52,7 +52,7 @@ func main() {
 
 	ctx := waitQuitSignal(context.Background())
 
-	s, err := cache.New(ctx, conf.PostgreSQL)
+	s, err := storageWrapper.New(ctx, conf.PostgreSQL)
 	if err != nil {
 		logger.Fatal("can't initialize storage", zap.Error(err))
 	}

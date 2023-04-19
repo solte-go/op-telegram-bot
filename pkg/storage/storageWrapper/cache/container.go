@@ -1,4 +1,4 @@
-package syncContainer
+package cache
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"go.uber.org/zap"
 	"sync"
 	"telegram-bot/solte.lab/pkg/models"
-	"telegram-bot/solte.lab/pkg/storage/postgresql"
+	"telegram-bot/solte.lab/pkg/storage/storageWrapper/postgresql"
 	"time"
 )
 
@@ -44,7 +44,7 @@ func New(ctx context.Context, st *postgresql.Storage) *Container {
 				c.syncUsersCache()
 			case <-ctx.Done():
 				ticker.Stop()
-				c.logger.Warn("received context done, stopping cache sync")
+				c.logger.Warn("received context done, stopping storageWrapper sync")
 				return
 			}
 		}
@@ -93,7 +93,7 @@ func (c *Container) syncUsersCache() {
 
 	users, err := c.sync.GetAllUsers()
 	if err != nil {
-		c.logger.Error("can't sync users cache", zap.Error(err))
+		c.logger.Error("can't sync users storageWrapper", zap.Error(err))
 		return
 	}
 
@@ -109,7 +109,7 @@ func (c *Container) syncUsersCache() {
 
 	c.clearUp()
 
-	c.logger.Debug("sync users cache completed")
+	c.logger.Debug("sync users storageWrapper completed")
 }
 
 func (c *Container) clearUp() {

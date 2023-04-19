@@ -1,4 +1,4 @@
-package cache
+package storageWrapper
 
 import (
 	"context"
@@ -8,15 +8,15 @@ import (
 	e "telegram-bot/solte.lab/pkg/errhandler"
 	"telegram-bot/solte.lab/pkg/models"
 	"telegram-bot/solte.lab/pkg/storage"
-	"telegram-bot/solte.lab/pkg/storage/cache/syncContainer"
 	"telegram-bot/solte.lab/pkg/storage/dialect"
-	"telegram-bot/solte.lab/pkg/storage/postgresql"
+	"telegram-bot/solte.lab/pkg/storage/storageWrapper/cache"
+	"telegram-bot/solte.lab/pkg/storage/storageWrapper/postgresql"
 	"time"
 )
 
 type StorageCache struct {
 	dialect *dialect.Dialect
-	db      databaseContract
+	db      contract
 	cache   cacheContainer
 }
 
@@ -30,20 +30,28 @@ func New(ctx context.Context, conf *config.PostgreSQL) (*StorageCache, error) {
 	return &StorageCache{
 		dialect: d,
 		db:      st,
-		cache:   syncContainer.New(ctx, st),
+		cache:   cache.New(ctx, st),
 	}, nil
 }
 
-type databaseContract interface {
-	GetWords(letter string) (page []*storage.Words, err error)
-	GetWordsFromTopic(topicTitle string) (words []*storage.Words, err error)
-	GetAlphabet() ([]string, error)
-	GetTopics() ([]string, error)
+type contract interface {
+	userContract
+	dialectContract
+}
+
+type userContract interface {
 	GetUser(user *models.User) (err error)
 	InsertUser(user *models.User) (err error)
 	UserExist(user *models.User) (bool, error)
 	UpdateUserLang(user *models.User) error
 	UpdateUserTopic(user *models.User) error
+}
+
+type dialectContract interface {
+	GetWords(letter string) (page []*storage.Words, err error)
+	GetWordsFromTopic(topicTitle string) (words []*storage.Words, err error)
+	GetAlphabet() ([]string, error)
+	GetTopics() ([]string, error)
 }
 
 type cacheContainer interface {
@@ -66,7 +74,7 @@ func (s *StorageCache) SetUserLanguage(user *models.User) (err error) {
 
 	err = s.cache.UpdateUser(user)
 	if err != nil {
-		if !errors.Is(err, syncContainer.ErrorNoUserForUpdate) {
+		if !errors.Is(err, cache.ErrorNoUserForUpdate) {
 			return err
 		}
 	}
@@ -107,7 +115,7 @@ func (s *StorageCache) SetUserTopic(user *models.User, topic string) (err error)
 
 	err = s.cache.UpdateUser(user)
 	if err != nil {
-		if !errors.Is(err, syncContainer.ErrorNoUserForUpdate) {
+		if !errors.Is(err, cache.ErrorNoUserForUpdate) {
 			return err
 		}
 	}
@@ -152,27 +160,15 @@ func (s *StorageCache) PickRandomFromTopic(user *models.User) (page *storage.Wor
 		return rndWord, nil
 	}
 
-	return s.pickRandomWords(user)
+	return s.pickRandomWords()
 }
 
-func (s *StorageCache) pickRandomWords(user *models.User) (page *storage.Words, err error) {
+func (s *StorageCache) pickRandomWords() (page *storage.Words, err error) {
 	if s.dialect.SyncAlphabet() {
 		s.dialect.Alphabet.Letters, err = s.db.GetAlphabet()
 		if err != nil {
 			return nil, err
 		}
-	}
-
-	cachedUser, ok := s.cache.GetUser(user.Name)
-	if ok {
-		user.Topic = cachedUser.Topic
-		user.Language = cachedUser.Language
-	} else {
-		err = s.db.GetUser(user)
-		if err != nil {
-			return nil, err
-		}
-		s.cache.AddUser(user)
 	}
 
 	source := rand.NewSource(time.Now().UnixNano())

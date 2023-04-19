@@ -5,7 +5,7 @@ import (
 	"fmt"
 	_ "github.com/lib/pq"
 	"telegram-bot/solte.lab/pkg/config"
-	"telegram-bot/solte.lab/pkg/storage/postgresql/internal"
+	"telegram-bot/solte.lab/pkg/storage/storageWrapper/postgresql/internal"
 )
 
 type Storage struct {
