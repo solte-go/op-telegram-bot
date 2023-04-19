@@ -1,7 +1,6 @@
 package postgresql
 
 import (
-	"database/sql"
 	"fmt"
 	e "telegram-bot/solte.lab/pkg/errhandler"
 	"telegram-bot/solte.lab/pkg/storage"
@@ -104,20 +103,6 @@ func (s *Storage) Remove(p *storage.Page) error {
 		return e.Wrap("can't remove file", err)
 	}
 	return nil
-}
-
-func (s *Storage) IsExist(p *storage.Page) (bool, error) {
-	id, err := s.getUserID(p.UserName)
-	if err == sql.ErrNoRows {
-		return false, nil
-	}
-
-	if err != nil {
-		return false, err
-	}
-
-	p.UserID = id
-	return s.checkLink(p)
 }
 
 func (s *Storage) GetAlphabet() ([]string, error) {

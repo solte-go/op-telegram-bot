@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"go.uber.org/zap"
-	"log"
+	"os"
+	"os/signal"
+	"syscall"
 	tgClient "telegram-bot/solte.lab/pkg/clients/telegram"
 	"telegram-bot/solte.lab/pkg/config"
 	eventConsumer "telegram-bot/solte.lab/pkg/consumer/event-consumer"
@@ -35,23 +38,44 @@ func main() {
 		panic(err)
 	}
 
+	logger.Debug("Telegram Bot Started")
+	defer logger.Sync() //nolint
+
+	undo := zap.ReplaceGlobals(logger)
+	defer undo()
+
 	if conf.TG.Token == "" {
 		logger.Fatal("Telegram token is empty")
 	}
 
 	tg := tgClient.New(conf.TG.Host, conf.TG.Token)
 
-	s, err := cache.New(conf.PostgreSQL)
+	ctx := waitQuitSignal(context.Background())
+
+	s, err := cache.New(ctx, conf.PostgreSQL)
 	if err != nil {
 		logger.Fatal("can't initialize storage", zap.Error(err))
 	}
 
 	eventProcessor := telegram.New(tg, s, logger)
 
-	logger.Info("Bot started")
-
 	c := eventConsumer.New(eventProcessor, eventProcessor, batchSize, logger)
-	if err := c.Start(); err != nil {
-		log.Fatalf("can't start consumer: %v", err)
+	if err := c.Start(ctx); err != nil {
+		logger.Warn("bot is shutting down", zap.String("reason", err.Error()))
 	}
+}
+
+func waitQuitSignal(ctx context.Context) context.Context {
+	ctx, cancel := context.WithCancel(ctx)
+
+	go func() {
+		quit := make(chan os.Signal, 1)
+		defer close(quit)
+		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+		<-quit
+		cancel()
+	}()
+
+	return ctx
 }

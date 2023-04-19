@@ -85,7 +85,7 @@ func (c *Client) doRequest(method string, query url.Values) (data []byte, err er
 	req.URL.RawQuery = query.Encode()
 	resp, err := c.client.Do(req)
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		fmt.Printf("unexpected respond: %v", resp)
 	}
 
 	if err != nil {

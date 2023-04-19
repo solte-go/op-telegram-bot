@@ -1,11 +1,15 @@
 package models
 
+import "errors"
+
 const (
 	defaultLanguage = "ru"
 	defaultTopic    = "all"
 	ru              = "ru"
 	en              = "en"
 )
+
+var ErrUnsupportedLanguage = errors.New("unsupported language argument")
 
 type User struct {
 	ID       int
@@ -16,8 +20,12 @@ type User struct {
 }
 
 func (u *User) SetDefaults() {
-	u.Language = defaultLanguage
-	u.Topic = defaultTopic
+	if u.Language == "" {
+		u.Language = defaultLanguage
+	}
+	if u.Language == "" {
+		u.Topic = defaultTopic
+	}
 }
 
 func (u *User) IsLanguageEnglish() bool {
@@ -25,4 +33,17 @@ func (u *User) IsLanguageEnglish() bool {
 		return true
 	}
 	return false
+}
+
+func (u *User) CheckLanguage(lang string) error {
+	switch lang {
+	case en:
+		u.Language = en
+	case ru:
+		u.Language = ru
+	default:
+		return ErrUnsupportedLanguage
+	}
+
+	return nil
 }

@@ -15,6 +15,7 @@ import (
 
 type Storage interface {
 	PickRandomWords(user *models.User) (page *Words, err error)
+	SetUserLanguage(user *models.User) (err error)
 }
 
 func (p *Page) Hash() (string, error) {

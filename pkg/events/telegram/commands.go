@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"errors"
+	"fmt"
 	"go.uber.org/zap"
 	"net/url"
 	"strings"
@@ -13,29 +14,34 @@ import (
 )
 
 const (
-	CmdStart         = "/start"
-	CmdHelp          = "/help"
-	CmdRndWords      = "/words"
-	CmdTopicOfTheDay = "/topic"
-	CmdSetTopic
+	CmdStart          = "/start"
+	CmdHelp           = "/help"
+	CmdRndWords       = "/words"
+	CmdTopic          = "/topic"
+	CmdSetTopic       = "/setTopic"
+	CmdSetLanguage    = "/setLang"
+	CmdPhraseOfTheDay = "/phraseOfDay"
 )
 
 func (p *Processor) doCmd(text string, user *models.User) error {
-	text = strings.TrimSpace(text)
-
 	p.logger.Info("Get new command", zap.String("content", text), zap.String("From User", user.Name))
 
+	cmd, arg := parseCommand(text)
 	//if isAddCmd(text) {
 	//	return p.savePage(chatID, text, username)
 	//}
 
-	switch text {
+	switch cmd {
 	case CmdStart:
 		return p.sendHello(user)
 	case CmdHelp:
 		return p.sendHelp(user)
 	case CmdRndWords:
 		return p.randomWords(user)
+	case CmdPhraseOfTheDay:
+		return p.phraseOfTheDay(user, arg)
+	case CmdSetLanguage:
+		return p.setLang(user, arg)
 	default:
 		return p.tg.SendMessage(user.ChatID, msgUnknownCommand)
 	}
@@ -80,6 +86,52 @@ func (p *Processor) randomWords(user *models.User) (err error) {
 	return nil
 }
 
+func (p *Processor) phraseOfTheDay(user *models.User, arg string) (err error) {
+	defer func() { err = e.WrapIfErr("can't execute command: for CmdPhraseOfTheDay", err) }()
+
+	sendMsg := newMessageSender(user.ChatID, p.tg)
+	if err = sendMsg(fmt.Sprintf("Phrase of the day\nMukavaa päivää - Hava a nice day")); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *Processor) setLang(user *models.User, arg string) (err error) {
+	defer func() { err = e.WrapIfErr("can't execute command: set language", err) }()
+
+	sendMsg := newMessageSender(user.ChatID, p.tg)
+
+	if arg == "" {
+		err = sendMsg(msgMissingArgument)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+	if err = user.CheckLanguage(arg); err != nil {
+		err = sendMsg(msgUnsupportedLang)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	err = p.storage.SetUserLanguage(user)
+	if err != nil {
+		return err
+	}
+
+	err = sendMsg(msgSettingApplied)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (p *Processor) sendHelp(user *models.User) error {
 	return p.tg.SendMessage(user.ChatID, msgHelp)
 }
@@ -92,6 +144,17 @@ func newMessageSender(ChatID int, tg *telegram.Client) func(string) error {
 	return func(msg string) error {
 		return tg.SendMessage(ChatID, msg)
 	}
+}
+
+func parseCommand(text string) (cmd, arg string) {
+	text = strings.TrimSpace(text)
+	input := strings.Split(text, " ")
+
+	if len(input) > 1 {
+		return input[0], input[1]
+	}
+
+	return input[0], ""
 }
 
 func isAddCmd(text string) bool {

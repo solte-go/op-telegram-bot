@@ -1,6 +1,7 @@
 package event_consumer
 
 import (
+	"context"
 	"go.uber.org/zap"
 	"telegram-bot/solte.lab/pkg/events"
 	"time"
@@ -22,8 +23,15 @@ func New(fetcher events.Fetcher, processor events.Processor, batchSize int, logg
 	}
 }
 
-func (c *Consumer) Start() error {
+func (c *Consumer) Start(ctx context.Context) error {
 	for {
+		select {
+		case <-ctx.Done():
+			c.logger.Warn("received context done, stopping consumer")
+			return ctx.Err()
+		default:
+		}
+
 		gotEvents, err := c.fetcher.Fetch(c.batchSize)
 		if err != nil {
 			c.logger.Error("can't fetch events", zap.Error(err))

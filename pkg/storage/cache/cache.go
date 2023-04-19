@@ -1,8 +1,11 @@
 package cache
 
 import (
+	"context"
+	"errors"
 	"math/rand"
 	"telegram-bot/solte.lab/pkg/config"
+	e "telegram-bot/solte.lab/pkg/errhandler"
 	"telegram-bot/solte.lab/pkg/models"
 	"telegram-bot/solte.lab/pkg/storage"
 	"telegram-bot/solte.lab/pkg/storage/cache/syncContainer"
@@ -17,7 +20,7 @@ type StorageCache struct {
 	cache   cacheContainer
 }
 
-func New(conf *config.PostgreSQL) (*StorageCache, error) {
+func New(ctx context.Context, conf *config.PostgreSQL) (*StorageCache, error) {
 	d := dialect.New()
 	st, err := postgresql.New(conf)
 	if err != nil {
@@ -27,7 +30,7 @@ func New(conf *config.PostgreSQL) (*StorageCache, error) {
 	return &StorageCache{
 		dialect: d,
 		db:      st,
-		cache:   syncContainer.New(),
+		cache:   syncContainer.New(ctx, st),
 	}, nil
 }
 
@@ -35,14 +38,37 @@ type databaseContract interface {
 	GetWords(letter string) (page []*storage.Words, err error)
 	GetAlphabet() ([]string, error)
 	GetUser(user *models.User) (err error)
-	Remove(p *storage.Page) error
-	IsExist(p *storage.Page) (bool, error)
+	InsertUser(user *models.User) (err error)
+	UserExist(user *models.User) (bool, error)
+	UpdateUserLang(user *models.User) error
 }
 
 type cacheContainer interface {
 	AddUser(user *models.User)
 	GetUser(name string) (models.User, bool)
-	UpdateUser(user models.User) error
+	UpdateUser(user *models.User) error
+}
+
+func (s *StorageCache) SetUserLanguage(user *models.User) (err error) {
+	defer func() { err = e.WrapIfErr("can't update user settings", err) }()
+
+	ok, err := s.db.UserExist(user)
+	if err != nil {
+		return err
+	}
+
+	if !ok {
+		return s.db.InsertUser(user)
+	}
+
+	err = s.cache.UpdateUser(user)
+	if err != nil {
+		if !errors.Is(err, syncContainer.ErrorNoUserForUpdate) {
+			return err
+		}
+	}
+
+	return s.db.UpdateUserLang(user)
 }
 
 func (s *StorageCache) PickRandomWords(user *models.User) (page *storage.Words, err error) {

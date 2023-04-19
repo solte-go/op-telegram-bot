@@ -18,8 +18,8 @@ func NewLogger(config *config.Logging) (*zap.Logger, error) {
 
 	cw := zapcore.Lock(os.Stdout)
 	je := zapcore.NewJSONEncoder(zapcore.EncoderConfig{
-		TimeKey:        "init_timestamp",
-		LevelKey:       "log_level",
+		TimeKey:        "timestamp",
+		LevelKey:       "level",
 		NameKey:        "log_name",
 		CallerKey:      "caller",
 		MessageKey:     "msg",
