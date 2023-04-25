@@ -9,14 +9,18 @@ on:
 
 jobs:
   docker:
+    runs-on: [op-runner]
     #     timeout-minutes: 10
     env:
       POSTGRES_PASSWORD: ${{secrets.PSQL_PASSWORD}}
-    runs-on: [op-runner]
+
     environment: lab
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: env
+        run: echo $POSTGRES_PASSWORD
 
       - name: Start container
         run: make ci_up
