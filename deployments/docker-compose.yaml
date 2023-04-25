@@ -16,7 +16,7 @@ services:
       - bot-network
 
   postgres:
-    container_name: op-postgres-db
+    container_name: op-postgres-lab
     image: postgres:15.2
     environment:
       - POSTGRES_PASSWORD=$PSQL_PASSWORD
@@ -24,28 +24,6 @@ services:
       - /opt/solte-lab/postgres/data/pgdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-    networks:
-      - bot-network
-
-  bot:
-    build:
-      context: ../
-      args:
-        - VERSION=$VERSION
-      dockerfile: Dockerfile
-      target: op-bot
-    container_name: bot_api
-    env_file:
-      - ./dev.env
-    image: "bot:${VERSION}"
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
-    ports:
-      - "2112:2112"
     networks:
       - bot-network
 
