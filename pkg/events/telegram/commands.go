@@ -2,9 +2,8 @@ package telegram
 
 import (
 	"errors"
-	"fmt"
-	"go.uber.org/zap"
 	"net/url"
+	"sort"
 	"strings"
 	"telegram-bot/solte.lab/pkg/clients/telegram"
 	e "telegram-bot/solte.lab/pkg/errhandler"
@@ -12,11 +11,15 @@ import (
 	"telegram-bot/solte.lab/pkg/storage"
 	"telegram-bot/solte.lab/pkg/storage/dialect"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 const (
 	CmdStart          = "/start"
 	CmdHelp           = "/help"
+	CmdHelpRu         = "/helpRu"
+	CmdHelpEn         = "/helpEn"
 	CmdRndWords       = "/words"
 	CmdTopics         = "/topics"
 	CmdSetTopic       = "/setTopic"
@@ -34,6 +37,10 @@ func (p *Processor) doCmd(text string, user *models.User) error {
 		return p.sendHello(user)
 	case CmdHelp:
 		return p.sendHelp(user)
+	case CmdHelpRu:
+		return p.sendHelpRu(user)
+	case CmdHelpEn:
+		return p.sendHelpEn(user)
 	case CmdRndWords:
 		return p.randomWords(user)
 	case CmdPhraseOfTheDay:
@@ -93,7 +100,7 @@ func (p *Processor) phraseOfTheDay(user *models.User, arg string) (err error) {
 	defer func() { err = e.WrapIfErr("can't execute command: for CmdPhraseOfTheDay", err) }()
 
 	sendMsg := newMessageSender(user.ChatID, p.tg)
-	if err = sendMsg(fmt.Sprintf("Phrase of the day\nMukavaa päivää - Hava a nice day")); err != nil {
+	if err = sendMsg("Phrase of the day\nMukavaa päivää - Hava a nice day"); err != nil {
 		return err
 	}
 
@@ -153,7 +160,9 @@ func (p *Processor) sendTopics(user *models.User) (err error) {
 		return nil
 	}
 
-	if err = sendMsg(concatStrings(topics...)); err != nil {
+	sort.Strings(topics)
+
+	if err = sendMsg(concatStringsAsList(topics...)); err != nil {
 		return err
 	}
 
@@ -188,6 +197,14 @@ func (p *Processor) setTopic(user *models.User, arg string) (err error) {
 
 func (p *Processor) sendHelp(user *models.User) error {
 	return p.tg.SendMessage(user.ChatID, msgHelp)
+}
+
+func (p *Processor) sendHelpRu(user *models.User) error {
+	return p.tg.SendMessage(user.ChatID, msgHelpRu)
+}
+
+func (p *Processor) sendHelpEn(user *models.User) error {
+	return p.tg.SendMessage(user.ChatID, msgHelpEn)
 }
 
 func (p *Processor) sendHello(user *models.User) error {

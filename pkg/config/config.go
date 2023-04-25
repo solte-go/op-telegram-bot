@@ -2,11 +2,12 @@ package config
 
 import (
 	"errors"
-	"github.com/joho/godotenv"
-	"github.com/spf13/viper"
 	"io/fs"
 	"os"
 	"strconv"
+
+	"github.com/joho/godotenv"
+	"github.com/spf13/viper"
 )
 
 type Config struct {
@@ -18,7 +19,8 @@ type Config struct {
 }
 
 type API struct {
-	Port int `mapstructure:"port"`
+	WorkerPort int `mapstructure:"worker_port"`
+	UIPort     int `mapstructure:"ui_port"`
 }
 
 type TG struct {
@@ -106,10 +108,10 @@ func (c *Config) readEnvironment(files ...string) error {
 }
 
 func (c *Config) loadEnv() {
-	c.PostgreSQL.Host = c.envVariables("PSQL_HOST")
-	c.PostgreSQL.Port = c.envIntVariables("PSQL_PORT")
+	// c.PostgreSQL.Host = c.envVariables("PSQL_HOST")
+	// c.PostgreSQL.Port = c.envIntVariables("PSQL_PORT")
 	c.PostgreSQL.Username = c.envVariables("PSQL_USERNAME")
 	c.PostgreSQL.Password = c.envVariables("PSQL_PASSWORD")
-	c.PostgreSQL.DBName = c.envVariables("PSQL_DBNAME")
+	// c.PostgreSQL.DBName = c.envVariables("PSQL_DBNAME")
 	c.TG.Token = c.envVariables("TG_TOKEN")
 }

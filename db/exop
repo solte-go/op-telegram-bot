@@ -1,0 +1,36 @@
+k,essentials,kiitos,thank you,спасибо
+f,family,perhe,family,семья
+p,family,äiti,mother,мама
+i,family,isä,father,папа
+s,family,sisko,sister,сестра
+a,animals,eläin,animal,животное
+a,animals,ankka,duck,утка
+s,animals,susi,wolf,волк
+k,animals,käärme,snake,змея
+k,animals,karhu,bear,медведь
+p,animals,pupu,bunny,кролик
+h,body,huuli,lip,губа
+k,city,kaupunki,city,город
+p,city,pääkaupunki,capital,столица
+s,family,suku,"family, relatives","семья, родственники"
+b,city,bussi,bus,автобус
+e,family,eno,uncle (mother's brother),дядя (брат мамы)
+s,family,setä,(father's brother),дядя (брат папы)
+v,family,veli,brother,брат
+k,flora,kukka,flower,цветок
+k,food,kakku,cake,торт
+k,food,kahvi,coffee,кофе
+m,colors,musta,black,чёрный
+p,colors,pinkki,pink,розовый
+s,colors,sininen,blue,синий
+n,numbers,nolla,zero,ноль
+y,numbers,yksi,one,один
+k,numbers,kaksi,two,два
+k,numbers,kolme,three,три
+n,numbers,neljä,four,четыре
+v,numbers,viisi,five,пять
+k,numbers,kuusi,six,шесть
+s,numbers,seitsemän,seven,семь
+k,numbers,kahdeksan,eight,восемь
+y,numbers,yhdeksän,nine,девять
+k,numbers,kymmenen,ten,десять

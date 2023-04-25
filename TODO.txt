@@ -1,0 +1,9 @@
+- docker-entrypoint.sh: for postgresql, it is necessary to wait for the database to be ready before running the migrations.
+This script is used to do that. It is also used to run the migrations and start the server.
+
+- setup docker secrets: this script is used to create the docker secrets used by the application.
+
+- swarm-stack.yaml: this file is used to deploy the application on a docker swarm cluster.
+
+- deploy gitlab runner: on VM to build container images and upload them to the registry.
+

@@ -60,7 +60,7 @@ func main() {
 	}
 
 	server := api.New(logger)
-	go server.Run(ctx, conf.API.Port, &metrics.Worker{})
+	go server.Run(ctx, conf.API.WorkerPort, &metrics.Worker{})
 
 	eventProcessor := telegram.New(tg, s, logger)
 

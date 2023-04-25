@@ -1,1 +1,7 @@
-package api
+package main
+
+//api server template
+
+func main() {
+
+}
