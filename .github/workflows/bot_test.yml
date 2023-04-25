@@ -1,0 +1,58 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: Go
+
+on:
+  push:
+    branches: [ "main", "OPB-001" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  docker:
+#     timeout-minutes: 10
+    runs-on:  [op-runner]
+    environment: lab
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Start containers
+      run: docker-compose -f "/deployments/docker-compose.yml" up -d --build
+      
+  build:
+    runs-on: [op-runner]
+    environment: lab
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: 1.20
+
+    - name: Build
+      run: go build -v ./...
+
+    - name: Test
+      run: go test -v ./...
+
+# jobs:
+#   build-image:
+#     name: Build Image
+#     runs-on: ubuntu-latest
+#     steps:
+            
+#       - name: Login to Docker Hub
+#         uses: docker/login-action@v2
+#         with:
+#           username: ${{ secrets.DOCKERHUB_USERNAME }}
+#           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+#       - name: Docker build
+#         uses: docker/build-push-action@v4
+#         with:
+#           push: ${{ github.event_name != 'pull_request' }}
+#           tags: bretfisher/docker-ci-automation:latest,bretfisher/docker-ci-automation:01
