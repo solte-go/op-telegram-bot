@@ -42,7 +42,7 @@ jobs:
       - name: Run vet & lint
         run: |
           go vet .
-          golint .
+          golint ./...
 
       - name: Build
         run: go build -v ./...
