@@ -18,7 +18,10 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
-
+      
+    - name: pwd
+      run: pwd
+      
     - name: Start containers
       run: docker-compose -f "/deployments/docker-compose.yml" up -d --build
       
