@@ -31,7 +31,7 @@ jobs:
         run: go mod download
 
       - name: Go mod vendors
-        run: go mod vendors
+        run: go mod vendor
 
       - name: Go Mod Verify
         run: go mod verify
