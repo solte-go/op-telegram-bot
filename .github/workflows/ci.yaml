@@ -45,7 +45,12 @@ jobs:
       - name: Run vet & lint
         run: |
           go vet ./...
-          golint ./...
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
+          version: v1.29
 
       - name: Build
         run: make build_worker
