@@ -1,0 +1,54 @@
+name: Go-CI
+
+on:
+  push:
+    branches: ["main", "OPB-001"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  docker:
+    #     timeout-minutes: 10
+    runs-on: [op-runner]
+    environment: lab
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Start container
+        run: make ci_up
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.20
+
+      - name: Go Tidy
+        run: go mod tidy && git diff --exit-code
+
+      - name: Go Mod
+        run: go mod download
+
+      - name: Go Mod Verify
+        run: go mod verify
+
+      - name: Install dependencies
+        run: |
+          go version
+          go get -u golang.org/x/lint/golint
+
+      # Run vet & lint on the code
+      - name: Run vet & lint
+        run: |
+          go vet .
+          golint .
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Test
+        run: go test -v ./...
+
+      - name: clearup
+        run: make ci_teardown
