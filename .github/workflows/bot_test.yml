@@ -22,8 +22,8 @@ jobs:
     - name: pwd
       run: pwd
       
-    - name: Start containers
-      run: docker-compose -f "/deployments/docker-compose.yml" up -d --build
+    - name: Start container
+      run: docker-compose -f ./deployments/docker-compose.yml up -d --build
       
   build:
     runs-on: [op-runner]
@@ -35,7 +35,10 @@ jobs:
       uses: actions/setup-go@v3
       with:
         go-version: 1.20
-
+    
+    - name: download vendors
+      run: go mod vendor
+    
     - name: Build
       run: go build -v ./...
 
