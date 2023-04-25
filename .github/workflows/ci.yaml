@@ -41,11 +41,11 @@ jobs:
       # Run vet & lint on the code
       - name: Run vet & lint
         run: |
-          go vet .
+          go vet ./...
           golint ./...
 
       - name: Build
-        run: go build -v ./...
+        run: make build_worker
 
       - name: Test
         run: go test -v ./...
