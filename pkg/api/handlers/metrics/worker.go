@@ -2,9 +2,9 @@ package metrics
 
 import (
 	"github.com/go-chi/chi/v5"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/prometheus/client_golang/prometheus"          //nolint
+	"github.com/prometheus/client_golang/prometheus/promauto" //nolint
+	"github.com/prometheus/client_golang/prometheus/promhttp" //nolint
 )
 
 var workerMetrics *Worker

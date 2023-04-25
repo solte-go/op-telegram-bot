@@ -10,6 +10,8 @@ on:
 jobs:
   docker:
     #     timeout-minutes: 10
+    env:
+      POSTGRES_PASSWORD: ${{secrets.PSQL_PASSWORD}}
     runs-on: [op-runner]
     environment: lab
     steps:
