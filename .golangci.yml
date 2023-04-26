@@ -1,0 +1,55 @@
+run:
+  skip-files:
+    - pkg/api/.*/.*
+
+linters-settings:
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - performance
+      - style
+    disabled-checks:
+      - dupImport
+
+linters:
+  disable-all: false
+  enable:
+    - staticcheck
+    - unparam
+    # - misspell
+    - prealloc
+    - gomnd
+    - gocritic
+    - golint
+  disable:
+    - gci
+  presets:
+    - bugs
+    - format
+    - performance
+    - unused
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - dupl
+        - gocritic
+        - unparam
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  fix: true
+
+severity:
+  default-severity: warning
+  rules:
+    - linters:
+        - dupl
+        - gosimple
+        - structcheck
+        - prealloc
+        - gocritic
+        - golint
+      severity: info
