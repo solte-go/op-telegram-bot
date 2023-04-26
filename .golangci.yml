@@ -1,6 +1,7 @@
 run:
   skip-dirs:
-    - pkg/api
+    - ./pkg/api
+    - ./vendor
 
 linters-settings:
   gocritic:
