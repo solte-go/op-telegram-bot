@@ -16,8 +16,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: compose setup
-        run: echo 'PSQL_PASSWORD=${{secrets.PSQL_PASSWORD}}' > ./deployments/.env
+      # - name: setup env
+      #   run: echo 'PSQL_PASSWORD=${{secrets.PSQL_PASSWORD}}' > ./deployments/.env
+
+      - name: Setup Env
+        run: |
+          export PSQL_PASSWORD=${{secrets.PSQL_PASSWORD}}
+          export PSQL_USER=${{secrets.PSQL_USER}}
+          export PSQL_DB=${{secrets.PSQL_DB}}
 
       - name: Start container
         run: make ci_up
