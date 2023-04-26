@@ -13,7 +13,7 @@ linters-settings:
     #   - dupImport
 
 linters:
-  disable-all: false
+  disable-all: true
   enable:
     - staticcheck
     - unparam
