@@ -8,8 +8,8 @@ linters-settings:
       - diagnostic
       - performance
       - style
-    disabled-checks:
-      - dupImport
+    # disabled-checks:
+    #   - dupImport
 
 linters:
   disable-all: false
@@ -21,8 +21,7 @@ linters:
     - gomnd
     - gocritic
     - golint
-  disable:
-    - gci
+  # disable:
   presets:
     - bugs
     - format
