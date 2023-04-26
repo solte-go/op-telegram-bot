@@ -3,18 +3,21 @@ package main
 import (
 	"context"
 	"flag"
-	"go.uber.org/zap"
 	"os"
 	"os/signal"
 	"syscall"
+
 	"telegram-bot/solte.lab/pkg/api"
 	"telegram-bot/solte.lab/pkg/api/handlers/metrics"
 	tgClient "telegram-bot/solte.lab/pkg/clients/telegram"
 	"telegram-bot/solte.lab/pkg/config"
-	eventConsumer "telegram-bot/solte.lab/pkg/consumer/event-consumer"
+	eventConsumer "telegram-bot/solte.lab/pkg/consumer/eventconsumer"
 	"telegram-bot/solte.lab/pkg/events/telegram"
 	"telegram-bot/solte.lab/pkg/logging"
-	"telegram-bot/solte.lab/pkg/storage/storageWrapper"
+	"telegram-bot/solte.lab/pkg/storage/storagewrapper"
+
+	_ "github.com/lib/pq"
+	"go.uber.org/zap"
 )
 
 var env string
@@ -54,7 +57,7 @@ func main() {
 
 	ctx := waitQuitSignal(context.Background())
 
-	s, err := storageWrapper.New(ctx, conf.PostgreSQL)
+	s, err := storagewrapper.New(ctx, conf.PostgreSQL)
 	if err != nil {
 		logger.Fatal("can't initialize storage", zap.Error(err))
 	}
