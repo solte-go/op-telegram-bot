@@ -1,7 +1,5 @@
 package main
 
-//api server template
-
+// api server template
 func main() {
-
 }

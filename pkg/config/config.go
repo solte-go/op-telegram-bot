@@ -44,13 +44,7 @@ func LoadConf(env string) (Config, error) {
 	var c Config
 
 	var confFileName string
-	if env == "prod" {
-		confFileName = "prod"
-		err := c.readEnvironment("dev.env")
-		if err != nil {
-			return Config{}, err
-		}
-	} else {
+	if env == "dev" {
 		confFileName = "dev"
 		err := c.readEnvironment("../dev.env")
 		if err != nil {

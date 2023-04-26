@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"path"
 	"strconv"
+
 	e "telegram-bot/solte.lab/pkg/errhandler"
 )
 
@@ -75,7 +76,7 @@ func (c *Client) doRequest(method string, query url.Values) (data []byte, err er
 		Path:   path.Join(c.basePath, method),
 	}
 
-	//TODO retry with backoff
+	// TODO retry with backoff
 
 	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
 	if err != nil {

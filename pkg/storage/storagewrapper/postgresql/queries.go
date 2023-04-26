@@ -2,12 +2,12 @@ package postgresql
 
 import (
 	"fmt"
-	e "telegram-bot/solte.lab/pkg/errhandler"
 	"telegram-bot/solte.lab/pkg/storage"
+
+	e "telegram-bot/solte.lab/pkg/errhandler"
 )
 
 func (s *Storage) GetWords(letter string) (words []*storage.Words, err error) {
-
 	query := `SELECT topic, suomi, russian, english FROM words WHERE letter=$1`
 
 	rows, err := s.db.Query(query, letter)
@@ -34,7 +34,6 @@ func (s *Storage) GetWords(letter string) (words []*storage.Words, err error) {
 }
 
 func (s *Storage) GetWordsFromTopic(topicTitle string) (words []*storage.Words, err error) {
-
 	query := `SELECT topic, suomi, russian, english FROM words WHERE topic=$1`
 
 	rows, err := s.db.Query(query, topicTitle)
@@ -61,7 +60,6 @@ func (s *Storage) GetWordsFromTopic(topicTitle string) (words []*storage.Words, 
 }
 
 func (s *Storage) GetTopics() ([]string, error) {
-
 	var topics []string
 	query := `SELECT DISTINCT topic FROM words`
 
@@ -98,7 +96,6 @@ func (s *Storage) Remove(p *storage.Page) error {
 }
 
 func (s *Storage) GetAlphabet() ([]string, error) {
-
 	var alphabet []string
 	query := `SELECT DISTINCT letter FROM words`
 

@@ -2,32 +2,6 @@ version: "3.7"
 services:
   prometheus:
     image: prom/prometheus:v2.43.0
-    container_name: prometheus
-    ports:
-      - "9090:9090"
-    expose:
-      - 9090
-    volumes:
-      - ./prometheus_cfg.yaml:/etc/prometheus/cfg.yaml
-    command:
-      - "--storage.tsdb.retention.time=30d"
-      - "--config.file=/etc/prometheus/cfg.yaml"
-    networks:
-      - bot-network
 
   postgres:
-    container_name: op-postgres-lab
     image: postgres:15.2
-    environment:
-      - POSTGRES_PASSWORD=$PSQL_PASSWORD
-    volumes:
-      # - /opt/solte-lab/postgres/data/pgdata:/var/lib/postgresql/data
-      - ./init-database.sh:/docker-entrypoint-initdb.d/init-database.sh
-    ports:
-      - "5432:5432"
-    networks:
-      - bot-network
-
-networks:
-  bot-network:
-    driver: bridge

@@ -1,6 +1,6 @@
 run:
   skip-dirs:
-    - pkg/api
+    # - pkg/api
     - vendor
 
 linters-settings:
@@ -15,12 +15,12 @@ linters-settings:
 linters:
   disable-all: true
   enable:
-    # - staticcheck
-    # - unparam
-    # # - misspell
-    # - prealloc
-    # - gomnd
-    # - gocritic
+    - staticcheck
+    - unparam
+    # - misspell
+    - prealloc
+    - gomnd
+    - gocritic
     - golint
   # disable:
   presets:

@@ -4,8 +4,9 @@ import (
 	"crypto/sha1"
 	"fmt"
 	"io"
-	e "telegram-bot/solte.lab/pkg/errhandler"
 	"telegram-bot/solte.lab/pkg/models"
+
+	e "telegram-bot/solte.lab/pkg/errhandler"
 )
 
 type Storage interface {

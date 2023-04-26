@@ -3,8 +3,9 @@ package postgresql
 import (
 	"database/sql"
 	"fmt"
-	e "telegram-bot/solte.lab/pkg/errhandler"
 	"telegram-bot/solte.lab/pkg/models"
+
+	e "telegram-bot/solte.lab/pkg/errhandler"
 )
 
 func (s *Storage) GetAllUsers() (users []models.User, err error) {
@@ -105,6 +106,9 @@ func (s *Storage) UserExist(user *models.User) (bool, error) {
 func (s *Storage) insertNewUserReturnID(username string) (int, error) {
 	var userID int
 	tx, err := s.db.Begin()
+	if err != nil {
+		return 0, err
+	}
 
 	stmt, err := tx.Prepare(`INSERT INTO "users" (user_name) VALUES ($1) RETURNING id`)
 	if err != nil {

@@ -1,10 +1,11 @@
 package postgresql
 
 import (
-	"github.com/stretchr/testify/suite"
 	"telegram-bot/solte.lab/pkg/config"
 	"telegram-bot/solte.lab/pkg/models"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type storageTests interface {

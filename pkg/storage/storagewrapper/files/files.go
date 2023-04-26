@@ -7,16 +7,17 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
-	e "telegram-bot/solte.lab/pkg/errhandler"
 	"telegram-bot/solte.lab/pkg/storage"
 	"time"
+
+	e "telegram-bot/solte.lab/pkg/errhandler"
 )
 
 type Storage struct {
 	basePath string
 }
 
-const defaultPermissions = 0774
+const defaultPermissions = 0o774
 
 func New(basePath string) *Storage {
 	return &Storage{basePath: basePath}
@@ -50,6 +51,7 @@ func (s *Storage) Save(page *storage.Page) (err error) {
 
 	return nil
 }
+
 func (s *Storage) PickRandom(userName string) (page *storage.Page, err error) {
 	defer func() { err = e.WrapIfErr("can't pick random page from file", err) }()
 

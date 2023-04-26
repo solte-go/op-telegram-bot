@@ -8,77 +8,69 @@ on:
   workflow_dispatch:
 
 jobs:
-  # docker:
-  #   runs-on: [op-runner]
-  #   #     timeout-minutes: 10
-  #   environment: lab
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v3
-
-  #     - name: setup env
-  #       run: echo 'PSQL_PASSWORD=${{secrets.PSQL_PASSWORD}}' > ./deployments/.env
-
-  #     # - name: Setup Env
-  #     #   run: |
-  #     #     export PSQL_PASSWORD=${{secrets.PSQL_PASSWORD}}
-  #     #     export PSQL_USER=${{secrets.PSQL_USER}}
-  #     #     export PSQL_DB=${{secrets.PSQL_DB}}
-
-  #     - name: Start container
-  #       run: make ci_up
-
-  #     - name: Set up Go
-  #       uses: actions/setup-go@v3
-  #       with:
-  #         go-version: "1.20"
-
-  #     - name: Install dependencies
-  #       run: |
-  #         go version
-  #         go get -u golang.org/x/lint/golint
-
-  #     - name: Go mod tidy
-  #       run: go mod tidy
-
-  #     - name: Go mod download
-  #       run: go mod download
-
-  #     - name: Go mod vendors
-  #       run: go mod vendor
-
-  #     - name: Go Mod Verify
-  #       run: go mod verify
-
-  #     # Run vet & lint on the code
-  #     - name: Run vet & lint
-  #       run: |
-  #         go vet ./...
-
-  #     - name: Build
-  #       run: make build_worker
-
-  #     - name: Test
-  #       run: go test -v ./...
-
-  #     - name: clearup
-  #       run: make ci_teardown
-
-  golangci:
-    name: lint
-    runs-on: ubuntu-latest
+  testing:
+    runs-on: [self-hosted, op-runner]
+    #     timeout-minutes: 10
+    environment: lab
     steps:
-      - uses: actions/setup-go@v4
+      - name: Coping repository files
+        uses: actions/checkout@v3
+
+      - name: Setup docker env
+        run: |
+          echo 'PSQL_PASSWORD=${{secrets.PSQL_PASSWORD}}' > ./deployments/.env
+          echo 'PSQL_USERNAME=${{secrets.PSQL_USERNAME}}' > ./deployments/.env
+          echo 'TG_TOKEN=${{secrets.TG_TOKEN}}' >> ./deployments/.env
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
         with:
           go-version: "1.20"
-          cache: false
-      - uses: actions/checkout@v3
 
-      - name: prepare lint
-        run: go list -e -compiled -test=true -export=false -deps=true -find=false -tags= -- ./... > /dev/null
+      - name: Go mod tidy
+        run: go mod tidy
 
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v3
-        with:
-          # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
-          version: v1.29
+      - name: Go mod download
+        run: go mod download
+
+      - name: Go mod vendors
+        run: go mod vendor
+
+      - name: Go Mod Verify
+        run: go mod verify
+
+      # Run vet & lint on the code
+      - name: Run vet & lint
+        run: |
+          go vet ./...
+
+      - name: Build & start containers
+        run: make ci_up
+
+      - name: Run unit tests
+        run: go test -v ./...
+
+      - name: Build executable
+        run: make build_worker
+
+      - name: clearup
+        run: make ci_teardown
+
+  # golangci:
+  #   name: lint
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/setup-go@v4
+  #       with:
+  #         go-version: "1.20"
+  #         cache: false
+  #     - uses: actions/checkout@v3
+
+  #     - name: prepare lint
+  #       run: go list -e -compiled -test=true -export=false -deps=true -find=false -tags= -- ./... > /dev/null
+
+  #     - name: golangci-lint
+  #       uses: golangci/golangci-lint-action@v3
+  #       with:
+  #         # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
+  #         version: v1.29

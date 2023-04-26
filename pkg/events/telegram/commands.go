@@ -6,13 +6,14 @@ import (
 	"sort"
 	"strings"
 	"telegram-bot/solte.lab/pkg/clients/telegram"
-	e "telegram-bot/solte.lab/pkg/errhandler"
 	"telegram-bot/solte.lab/pkg/models"
 	"telegram-bot/solte.lab/pkg/storage"
 	"telegram-bot/solte.lab/pkg/storage/dialect"
 	"time"
 
 	"go.uber.org/zap"
+
+	e "telegram-bot/solte.lab/pkg/errhandler"
 )
 
 const (
@@ -81,7 +82,7 @@ func (p *Processor) randomWords(user *models.User) (err error) {
 
 	time.Sleep(3 * time.Second)
 
-	//TODO more languages logic
+	// TODO more languages logic
 	if user.IsLanguageEnglish() {
 		if err = sendMsg(concatStrings(word.Suomi, word.English)); err != nil {
 			return err

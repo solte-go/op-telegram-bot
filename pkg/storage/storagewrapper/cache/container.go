@@ -3,11 +3,12 @@ package cache
 import (
 	"context"
 	"errors"
-	"go.uber.org/zap"
 	"sync"
 	"telegram-bot/solte.lab/pkg/models"
-	"telegram-bot/solte.lab/pkg/storage/storageWrapper/postgresql"
+	"telegram-bot/solte.lab/pkg/storage/storagewrapper/postgresql"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 type dbSync interface {
@@ -29,7 +30,6 @@ type Container struct {
 var ErrorNoUserForUpdate = errors.New("no user for update")
 
 func New(ctx context.Context, st *postgresql.Storage) *Container {
-
 	c := &Container{
 		userCache: make(map[string]*userCache),
 		sync:      st,

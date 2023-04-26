@@ -2,11 +2,11 @@ package logging
 
 import (
 	"os"
-	"telegram-bot/solte.lab/pkg/config"
 	"time"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"telegram-bot/solte.lab/pkg/config"
 )
 
 func NewLogger(config *config.Logging) (*zap.Logger, error) {

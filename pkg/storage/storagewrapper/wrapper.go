@@ -1,17 +1,19 @@
-package storageWrapper
+package storagewrapper
 
 import (
 	"context"
 	"errors"
 	"math/rand"
 	"telegram-bot/solte.lab/pkg/config"
-	e "telegram-bot/solte.lab/pkg/errhandler"
 	"telegram-bot/solte.lab/pkg/models"
 	"telegram-bot/solte.lab/pkg/storage"
 	"telegram-bot/solte.lab/pkg/storage/dialect"
-	"telegram-bot/solte.lab/pkg/storage/storageWrapper/cache"
-	"telegram-bot/solte.lab/pkg/storage/storageWrapper/postgresql"
+	"telegram-bot/solte.lab/pkg/storage/storagewrapper/cache"
+	"telegram-bot/solte.lab/pkg/storage/storagewrapper/postgresql"
+
 	"time"
+
+	e "telegram-bot/solte.lab/pkg/errhandler"
 )
 
 type StorageCache struct {
