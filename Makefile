@@ -7,7 +7,7 @@ docker_build:
 	docker build --build-arg $(VERSION) -t solte/op-bot:$(VERSION) .
 
 ci_up:
-	docker compose -f ./deployments/docker-compose.yaml -f ./deployments/docker-compose-test up -d
+	docker compose -f ./deployments/docker-compose.yaml -f ./deployments/docker-compose-test.yaml up -d
 
 ci_teardown:
 	docker compose -f ./deployments/docker-compose.yaml down -v
