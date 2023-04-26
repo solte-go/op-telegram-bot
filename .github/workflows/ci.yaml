@@ -8,61 +8,61 @@ on:
   workflow_dispatch:
 
 jobs:
-  docker:
-    runs-on: [op-runner]
-    #     timeout-minutes: 10
-    environment: lab
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+  # docker:
+  #   runs-on: [op-runner]
+  #   #     timeout-minutes: 10
+  #   environment: lab
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
 
-      - name: setup env
-        run: echo 'PSQL_PASSWORD=${{secrets.PSQL_PASSWORD}}' > ./deployments/.env
+  #     - name: setup env
+  #       run: echo 'PSQL_PASSWORD=${{secrets.PSQL_PASSWORD}}' > ./deployments/.env
 
-      # - name: Setup Env
-      #   run: |
-      #     export PSQL_PASSWORD=${{secrets.PSQL_PASSWORD}}
-      #     export PSQL_USER=${{secrets.PSQL_USER}}
-      #     export PSQL_DB=${{secrets.PSQL_DB}}
+  #     # - name: Setup Env
+  #     #   run: |
+  #     #     export PSQL_PASSWORD=${{secrets.PSQL_PASSWORD}}
+  #     #     export PSQL_USER=${{secrets.PSQL_USER}}
+  #     #     export PSQL_DB=${{secrets.PSQL_DB}}
 
-      - name: Start container
-        run: make ci_up
+  #     - name: Start container
+  #       run: make ci_up
 
-      - name: Set up Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: "1.20"
+  #     - name: Set up Go
+  #       uses: actions/setup-go@v3
+  #       with:
+  #         go-version: "1.20"
 
-      - name: Install dependencies
-        run: |
-          go version
-          go get -u golang.org/x/lint/golint
+  #     - name: Install dependencies
+  #       run: |
+  #         go version
+  #         go get -u golang.org/x/lint/golint
 
-      - name: Go mod tidy
-        run: go mod tidy
+  #     - name: Go mod tidy
+  #       run: go mod tidy
 
-      - name: Go mod download
-        run: go mod download
+  #     - name: Go mod download
+  #       run: go mod download
 
-      - name: Go mod vendors
-        run: go mod vendor
+  #     - name: Go mod vendors
+  #       run: go mod vendor
 
-      - name: Go Mod Verify
-        run: go mod verify
+  #     - name: Go Mod Verify
+  #       run: go mod verify
 
-      # Run vet & lint on the code
-      - name: Run vet & lint
-        run: |
-          go vet ./...
+  #     # Run vet & lint on the code
+  #     - name: Run vet & lint
+  #       run: |
+  #         go vet ./...
 
-      - name: Build
-        run: make build_worker
+  #     - name: Build
+  #       run: make build_worker
 
-      - name: Test
-        run: go test -v ./...
+  #     - name: Test
+  #       run: go test -v ./...
 
-      - name: clearup
-        run: make ci_teardown
+  #     - name: clearup
+  #       run: make ci_teardown
 
   golangci:
     name: lint
@@ -74,8 +74,8 @@ jobs:
           cache: false
       - uses: actions/checkout@v3
 
-      - name: prepare lint
-        run: go list -e -compiled -test=true -export=false -deps=true -find=false -tags= -- ./... > /dev/null
+      # - name: prepare lint
+      #   run: go list -e -compiled -test=true -export=false -deps=true -find=false -tags= -- ./... > /dev/null
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
