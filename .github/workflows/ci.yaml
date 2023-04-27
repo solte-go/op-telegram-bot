@@ -5,6 +5,8 @@ on:
     branches: ["main", "OPB-001"]
   pull_request:
     branches: ["main"]
+  tags:
+    - '*'
   workflow_dispatch:
 
 jobs:
@@ -13,6 +15,15 @@ jobs:
     #     timeout-minutes: 10
     environment: lab
     steps:
+      - name: Docker meta
+        id: docker_meta
+        uses: docker/metadata-action@v4
+
+      - name: Tags
+        run: |
+          echo "The tag for this commit is ${{ github.ref }}"
+          echo ${{ steps.meta.outputs.tags }}
+
       - name: Coping repository files
         uses: actions/checkout@v3
 
