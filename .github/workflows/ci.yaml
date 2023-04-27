@@ -16,6 +16,8 @@ jobs:
       - name: Docker meta
         id: docker_meta
         uses: docker/metadata-action@v4
+        with:
+          image: solte/op-bot
 
       - name: Tags
         run: |
