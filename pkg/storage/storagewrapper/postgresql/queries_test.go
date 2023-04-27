@@ -5,6 +5,8 @@ import (
 	"telegram-bot/solte.lab/pkg/config"
 	"telegram-bot/solte.lab/pkg/models"
 	"testing"
+
+	_ "github.com/lib/pq"
 )
 
 type storageTests interface {
