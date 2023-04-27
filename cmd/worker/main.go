@@ -9,15 +9,18 @@ import (
 
 	"telegram-bot/solte.lab/pkg/api"
 	"telegram-bot/solte.lab/pkg/api/handlers/metrics"
-	tgClient "telegram-bot/solte.lab/pkg/clients/telegram"
 	"telegram-bot/solte.lab/pkg/config"
-	eventConsumer "telegram-bot/solte.lab/pkg/consumer/eventconsumer"
 	"telegram-bot/solte.lab/pkg/events/telegram"
 	"telegram-bot/solte.lab/pkg/logging"
 	"telegram-bot/solte.lab/pkg/storage/storagewrapper"
 
-	_ "github.com/lib/pq"
 	"go.uber.org/zap"
+
+	tgClient "telegram-bot/solte.lab/pkg/clients/telegram"
+
+	eventConsumer "telegram-bot/solte.lab/pkg/consumer/eventconsumer"
+
+	_ "github.com/lib/pq"
 )
 
 var env string
