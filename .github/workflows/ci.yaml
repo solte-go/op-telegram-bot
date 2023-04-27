@@ -23,9 +23,9 @@ jobs:
           WITH_V: true
           DRY_RUN: true
 
-      - name: echo new tag
-        run: |
-          echo "The next tag version will be: ${{ steps.taggerDryRun.outputs.new_tag }}"
+#      - name: echo tag
+#        run: |
+#          echo "The next tag version will be: ${{ steps.taggerDryRun.outputs.new_tag }}"
       - name: echo tag
         run: |
             echo "The current tag is: ${{ steps.taggerDryRun.outputs.tag }}"
@@ -43,7 +43,7 @@ jobs:
           echo 'PSQL_PASSWORD=${{secrets.PSQL_PASSWORD}}' >> ./deployments/.env
           echo 'PSQL_USERNAME=${{secrets.PSQL_USERNAME}}' >> ./deployments/.env
           echo 'TG_TOKEN=${{secrets.TG_TOKEN}}' >> ./deployments/.env
-          echo 'VERSION=lab-0.0.1' >> ./deployments/.env
+          echo 'VERSION=${{ steps.taggerDryRun.outputs.tag }}' >> ./deployments/.env
 
       - name: Set up Go
         uses: actions/setup-go@v3
