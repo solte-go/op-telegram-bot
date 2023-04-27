@@ -18,10 +18,16 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: solte/op-bot
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=sha
 
       - name: Tags
         run: |
-          echo "The tag for this commit is ${{ github.ref/refs/tags/ }}"
+          echo "The tag for this commit is ${{ github.ref }}"
 
       - name: Coping repository files
         uses: actions/checkout@v3
