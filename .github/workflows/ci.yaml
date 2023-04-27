@@ -15,6 +15,12 @@ jobs:
     #     timeout-minutes: 10
     environment: lab
     steps:
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: solte/op-bot
+
       - name: Minor version for each merge
         id: taggerDryRun
         uses: anothrNick/github-tag-action@1.61.0
