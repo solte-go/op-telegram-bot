@@ -44,6 +44,10 @@ func LoadConf(env string) (Config, error) {
 	var c Config
 
 	var confFileName string
+	if env == "prod" {
+		confFileName = "prod"
+	}
+
 	if env == "dev" {
 		confFileName = "dev"
 		err := c.readEnvironment("../dev.env")
@@ -102,10 +106,10 @@ func (c *Config) readEnvironment(files ...string) error {
 }
 
 func (c *Config) loadEnv() {
-	// c.PostgreSQL.Host = c.envVariables("PSQL_HOST")
-	// c.PostgreSQL.Port = c.envIntVariables("PSQL_PORT")
+	c.PostgreSQL.Host = c.envVariables("PSQL_HOST")
+	c.PostgreSQL.Port = c.envIntVariables("PSQL_PORT")
 	c.PostgreSQL.Username = c.envVariables("PSQL_USERNAME")
 	c.PostgreSQL.Password = c.envVariables("PSQL_PASSWORD")
-	// c.PostgreSQL.DBName = c.envVariables("PSQL_DBNAME")
+	c.PostgreSQL.DBName = c.envVariables("PSQL_DBNAME")
 	c.TG.Token = c.envVariables("TG_TOKEN")
 }

@@ -3,9 +3,9 @@ package postgresql
 import (
 	"database/sql"
 	"fmt"
-	"telegram-bot/solte.lab/pkg/models"
 
 	e "telegram-bot/solte.lab/pkg/errhandler"
+	"telegram-bot/solte.lab/pkg/models"
 )
 
 func (s *Storage) GetAllUsers() (users []models.User, err error) {

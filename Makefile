@@ -6,6 +6,12 @@ build_worker:
 docker_build:
 	docker build --build-arg $(VERSION) -t solte/op-bot:$(VERSION) .
 
+local_up:
+	docker compose -f ./deployments/docker-compose.yaml up -d
+
+local_teardown:
+	docker compose -f ./deployments/docker-compose.yaml down -v
+
 ci_up:
 	docker compose -f ./deployments/docker-compose.yaml -f ./deployments/docker-compose-test.yaml up -d
 

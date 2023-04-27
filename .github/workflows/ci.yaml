@@ -18,8 +18,10 @@ jobs:
 
       - name: Setup docker env
         run: |
-          echo 'PSQL_PASSWORD=${{secrets.PSQL_PASSWORD}}' > ./deployments/.env
-          echo 'PSQL_USERNAME=${{secrets.PSQL_USERNAME}}' > ./deployments/.env
+          echo 'PSQL_HOST=${{secrets.PSQL_HOST}}' > ./deployments/.env
+          echo 'PSQL_DBNAME=${{secrets.PSQL_DBNAME}}' >> ./deployments/.env
+          echo 'PSQL_PASSWORD=${{secrets.PSQL_PASSWORD}}' >> ./deployments/.env
+          echo 'PSQL_USERNAME=${{secrets.PSQL_USERNAME}}' >> ./deployments/.env
           echo 'TG_TOKEN=${{secrets.TG_TOKEN}}' >> ./deployments/.env
 
       - name: Set up Go

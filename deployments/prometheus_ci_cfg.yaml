@@ -4,4 +4,4 @@ scrape_configs:
     metrics_path: /metrics
     static_configs:
       - targets:
-          - localhost:2112
+          - telegram-bot:2112

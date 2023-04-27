@@ -3,7 +3,6 @@ package postgresql
 import (
 	"database/sql"
 	"fmt"
-
 	"telegram-bot/solte.lab/pkg/config"
 	"telegram-bot/solte.lab/pkg/storage/storagewrapper/postgresql/internal"
 )

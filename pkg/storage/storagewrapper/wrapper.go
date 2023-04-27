@@ -4,16 +4,15 @@ import (
 	"context"
 	"errors"
 	"math/rand"
+	"time"
+
 	"telegram-bot/solte.lab/pkg/config"
+	e "telegram-bot/solte.lab/pkg/errhandler"
 	"telegram-bot/solte.lab/pkg/models"
 	"telegram-bot/solte.lab/pkg/storage"
 	"telegram-bot/solte.lab/pkg/storage/dialect"
 	"telegram-bot/solte.lab/pkg/storage/storagewrapper/cache"
 	"telegram-bot/solte.lab/pkg/storage/storagewrapper/postgresql"
-
-	"time"
-
-	e "telegram-bot/solte.lab/pkg/errhandler"
 )
 
 type StorageCache struct {
@@ -178,6 +177,10 @@ func (s *StorageCache) randomWordsWithoutTopic() (page *storage.Words, err error
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	if len(s.dialect.Alphabet.Letters) == 0 {
+		return nil, errors.New("no words in db")
 	}
 
 	source := rand.NewSource(time.Now().UnixNano())

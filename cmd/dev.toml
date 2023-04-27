@@ -11,7 +11,7 @@
     port = 5432
     username = ""
     password = ""
-    dbname = "telegram_bot_dev"
+    dbname = ""
 
 [logging]
     loglevel = "debug"

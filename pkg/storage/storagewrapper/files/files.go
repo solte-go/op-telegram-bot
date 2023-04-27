@@ -7,10 +7,10 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
-	"telegram-bot/solte.lab/pkg/storage"
 	"time"
 
 	e "telegram-bot/solte.lab/pkg/errhandler"
+	"telegram-bot/solte.lab/pkg/storage"
 )
 
 type Storage struct {

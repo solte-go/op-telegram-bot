@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"sync"
-	"telegram-bot/solte.lab/pkg/models"
-	"telegram-bot/solte.lab/pkg/storage/storagewrapper/postgresql"
 	"time"
 
 	"go.uber.org/zap"
+	"telegram-bot/solte.lab/pkg/models"
+	"telegram-bot/solte.lab/pkg/storage/storagewrapper/postgresql"
 )
 
 type dbSync interface {
