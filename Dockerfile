@@ -12,7 +12,6 @@ COPY . .
 ARG CGO_ENABLED=0
 ARG GOOS=linux
 ARG VERSION
-# RUN echo "Build version: $VERSION"
 
 RUN  --mount=type=cache,target=/root/.cache \
     cd cmd/worker && go build -tags musl -o ../bot -ldflags "-X main.version=$VERSION" ;
@@ -24,8 +23,5 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /build/cmd/prod.toml /opt/prod.toml
 COPY --from=builder /build/cmd/bot /opt/worker/
 
-#EXPOSE 8080
-
 WORKDIR /opt/worker
 ENTRYPOINT ["./bot", "-env", "prod"]
-#ENTRYPOINT ["./bot"]

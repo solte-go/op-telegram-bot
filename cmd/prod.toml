@@ -7,11 +7,11 @@
     token = ""
 
 [postgresql]
-    host ="postgres"
+    host =""
     port = 5432
     username = ""
     password = ""
-    dbname = "telegram_bot"
+    dbname = ""
 
 [logging]
     loglevel = "debug"
