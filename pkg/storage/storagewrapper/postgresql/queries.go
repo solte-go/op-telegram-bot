@@ -2,9 +2,9 @@ package postgresql
 
 import (
 	"fmt"
+	"telegram-bot/solte.lab/pkg/storage"
 
 	e "telegram-bot/solte.lab/pkg/errhandler"
-	"telegram-bot/solte.lab/pkg/storage"
 )
 
 func (s *Storage) GetWords(letter string) (words []*storage.Words, err error) {
