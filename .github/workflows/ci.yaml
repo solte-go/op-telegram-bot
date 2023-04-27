@@ -22,7 +22,6 @@ jobs:
       - name: Tags
         run: |
           echo "The tag for this commit is ${{ github.ref }}"
-          echo '${{ steps.meta.outputs.tags }}'
 
       - name: Coping repository files
         uses: actions/checkout@v3
