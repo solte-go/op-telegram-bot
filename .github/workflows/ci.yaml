@@ -3,6 +3,8 @@ name: Go-CI
 on:
   push:
     branches: ["main", "OPB-001"]
+    tags:
+      - '.**'
   pull_request:
     branches: ["main"]
   workflow_dispatch:
@@ -13,21 +15,23 @@ jobs:
     #     timeout-minutes: 10
     environment: lab
     steps:
-      - name: Docker meta
-        id: docker_meta
-        uses: docker/metadata-action@v4
-        with:
-          images: solte/op-bot
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=tag
-            type=sha
+      - name: Minor version for each merge
+        id: taggerDryRun
+        uses: anothrNick/github-tag-action@1.36.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
+          DRY_RUN: true
 
-      - name: Tags
+      - name: echo new tag
         run: |
-          echo "The tag for this commit is ${{ github.ref }}"
+          echo "The next tag version will be: ${{ steps.taggerDryRun.outputs.new_tag }}"
+      - name: echo tag
+        run: |
+            echo "The current tag is: ${{ steps.taggerDryRun.outputs.tag }}"
+      - name: echo part
+        run: |
+          echo "The version increment was: ${{ steps.taggerDryRun.outputs.part }}"
 
       - name: Coping repository files
         uses: actions/checkout@v3
