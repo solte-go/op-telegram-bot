@@ -21,7 +21,7 @@ jobs:
 
       - name: Tags
         run: |
-          echo "The tag for this commit is ${{ github.ref }}"
+          echo "The tag for this commit is ${{ github.ref/refs/tags/ }}"
 
       - name: Coping repository files
         uses: actions/checkout@v3
