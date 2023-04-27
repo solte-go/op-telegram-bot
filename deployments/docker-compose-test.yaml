@@ -30,7 +30,6 @@ services:
           "CMD-SHELL",
           "sh -c 'pg_isready -U ${PSQL_USERNAME} -d ${PSQL_DBNAME}'"
         ]
-      # test: [ "CMD-SHELL", "pg_isready" ]
       interval: 20s
       timeout: 5s
       retries: 5
