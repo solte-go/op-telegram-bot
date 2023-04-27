@@ -22,19 +22,16 @@ jobs:
           images: solte/op-bot
 
       - name: Minor version for each merge
-        id: taggerDryRun
-        uses: anothrNick/github-tag-action@1.61.0
+        id: tag_extractor
+        uses: solte-go/tag_to_output@1.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          WITH_V: true
-          DRY_RUN: true
+#          WITH_V: true
+#          DRY_RUN: true
 
       - name: echo tag
         run: |
-            echo "The current tag is: ${{ steps.taggerDryRun.outputs.tag }}"
-      - name: echo part
-        run: |
-          echo "The version increment was: ${{ steps.taggerDryRun.outputs.part }}"
+            echo "The current tag is: ${{ steps.tag_extractor.outputs.tag }}"
 
       - name: Coping repository files
         uses: actions/checkout@v3
@@ -46,7 +43,7 @@ jobs:
           echo 'PSQL_PASSWORD=${{secrets.PSQL_PASSWORD}}' >> ./deployments/.env
           echo 'PSQL_USERNAME=${{secrets.PSQL_USERNAME}}' >> ./deployments/.env
           echo 'TG_TOKEN=${{secrets.TG_TOKEN}}' >> ./deployments/.env
-          echo 'VERSION=${{ steps.taggerDryRun.outputs.tag }}' >> ./deployments/.env
+          echo 'VERSION=${{ steps.tag_extractor.outputs.tag }}' >> ./deployments/.env
 
       - name: Set up Go
         uses: actions/setup-go@v3
