@@ -21,9 +21,9 @@ jobs:
         with:
           images: solte/op-bot
 
-      - name: Minor version for each merge
+      - name: Extract tag
         id: tag_extractor
-        uses: solte-go/tag_to_output@1.0.0
+        uses: solte-go/tag_to_output@@main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 #          WITH_V: true
