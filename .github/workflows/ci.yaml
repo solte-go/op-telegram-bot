@@ -23,7 +23,7 @@ jobs:
 
       - name: Extract tag
         id: tag_extractor
-        uses: solte-go/tag_to_output@main
+        uses: solte-go/git-tag-output-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 #          WITH_V: true
