@@ -16,7 +16,7 @@ type dbSync interface {
 }
 
 type userCache struct {
-	user     models.User
+	user     *models.User
 	syncTime time.Time
 }
 
@@ -28,6 +28,7 @@ type Container struct {
 }
 
 var ErrorNoUserForUpdate = errors.New("no user for update")
+var ErrorUserEmpty = errors.New("user should not be is empty")
 
 func New(ctx context.Context, st *postgresql.Storage) *Container {
 	c := &Container{
@@ -58,21 +59,32 @@ func (c *Container) AddUser(user *models.User) {
 	defer c.mx.Unlock()
 
 	c.userCache[user.Name] = &userCache{
-		user:     *user,
+		user:     user,
 		syncTime: time.Now(),
 	}
 }
 
-func (c *Container) GetUser(name string) (models.User, bool) {
+func (c *Container) GetUser(name string) (*models.User, bool) {
 	c.mx.RLock()
 	defer c.mx.RUnlock()
 
 	cachedUser, ok := c.userCache[name]
 	if !ok {
-		return models.User{}, false
+		return nil, false
 	}
 
 	return cachedUser.user, true
+}
+
+func (c *Container) UpdateUserWithUpset(user *models.User) error {
+	if user == nil {
+		return ErrorUserEmpty
+	}
+	err := c.UpdateUser(user)
+	if err != nil {
+		c.AddUser(user)
+	}
+	return nil
 }
 
 func (c *Container) UpdateUser(user *models.User) error {
@@ -81,7 +93,7 @@ func (c *Container) UpdateUser(user *models.User) error {
 
 	cachedUser, ok := c.userCache[user.Name]
 	if ok {
-		cachedUser.user = *user
+		cachedUser.user = user
 		return nil
 	}
 
@@ -100,7 +112,9 @@ func (c *Container) syncUsersCache() {
 	for _, user := range users {
 		cachedUser, ok := c.userCache[user.Name]
 		if ok {
-			cachedUser.user = user
+			cachedUser.user.Topic = user.Topic
+			cachedUser.user.Language = user.Language
+			cachedUser.user.Offset = user.Offset
 			cachedUser.syncTime = time.Now()
 		}
 	}

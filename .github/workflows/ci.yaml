@@ -76,7 +76,7 @@ jobs:
       - name: Build executable
         run: make build_worker
 
-      - name: clearup
+      - name: cleanup
         run: make ci_teardown
 
   # golangci:

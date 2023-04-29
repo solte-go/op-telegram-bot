@@ -1,6 +1,8 @@
 package models
 
-import "errors"
+import (
+	"errors"
+)
 
 const (
 	defaultLanguage = "ru"
@@ -17,6 +19,8 @@ type User struct {
 	Language string
 	Topic    string
 	ChatID   int
+	Offset   int
+	Sequence *Sequence
 }
 
 func (u *User) SetDefaults() {

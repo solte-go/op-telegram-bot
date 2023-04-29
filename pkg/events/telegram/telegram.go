@@ -74,6 +74,10 @@ func (p *Processor) processMessage(event events.Event) error {
 	user := &models.User{
 		Name:   meta.Username,
 		ChatID: meta.ChatID,
+		Sequence: &models.Sequence{
+			Words:    nil,
+			NextWord: 0,
+		},
 	}
 
 	if err := p.doCmd(event.Text, user); err != nil {

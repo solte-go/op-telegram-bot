@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
+	"telegram-bot/solte.lab/pkg/models"
 	"time"
 
 	e "telegram-bot/solte.lab/pkg/errhandler"
@@ -23,7 +24,7 @@ func New(basePath string) *Storage {
 	return &Storage{basePath: basePath}
 }
 
-func (s *Storage) Save(page *storage.Page) (err error) {
+func (s *Storage) Save(page *models.Page) (err error) {
 	defer func() { err = e.WrapIfErr("can't save page to file", err) }()
 
 	filePath := filepath.Join(s.basePath, page.UserName)
@@ -52,7 +53,7 @@ func (s *Storage) Save(page *storage.Page) (err error) {
 	return nil
 }
 
-func (s *Storage) PickRandom(userName string) (page *storage.Page, err error) {
+func (s *Storage) PickRandom(userName string) (page *models.Page, err error) {
 	defer func() { err = e.WrapIfErr("can't pick random page from file", err) }()
 
 	path := filepath.Join(s.basePath, userName)
@@ -73,7 +74,7 @@ func (s *Storage) PickRandom(userName string) (page *storage.Page, err error) {
 	return s.decodePage(filepath.Join(path, file.Name()))
 }
 
-func (s *Storage) Remove(page *storage.Page) error {
+func (s *Storage) Remove(page *models.Page) error {
 	fName, err := fileName(page)
 	if err != nil {
 		return e.Wrap("can't remove file", err)
@@ -87,7 +88,7 @@ func (s *Storage) Remove(page *storage.Page) error {
 	return nil
 }
 
-func (s *Storage) IsExist(page *storage.Page) (bool, error) {
+func (s *Storage) IsExist(page *models.Page) (bool, error) {
 	fName, err := fileName(page)
 	if err != nil {
 		return false, e.Wrap("can't find file", err)
@@ -104,14 +105,14 @@ func (s *Storage) IsExist(page *storage.Page) (bool, error) {
 	return true, nil
 }
 
-func (s *Storage) decodePage(filePath string) (*storage.Page, error) {
+func (s *Storage) decodePage(filePath string) (*models.Page, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return nil, e.Wrap("cant' decode file", err)
 	}
 	defer func() { _ = file.Close() }()
 
-	p := &storage.Page{}
+	p := &models.Page{}
 
 	if err := gob.NewDecoder(file).Decode(p); err != nil {
 		return nil, e.Wrap("cant' decode file", err)
@@ -119,6 +120,6 @@ func (s *Storage) decodePage(filePath string) (*storage.Page, error) {
 	return p, nil
 }
 
-func fileName(p *storage.Page) (string, error) {
+func fileName(p *models.Page) (string, error) {
 	return p.Hash()
 }

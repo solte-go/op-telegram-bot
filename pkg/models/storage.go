@@ -1,4 +1,4 @@
-package storage
+package models
 
 type Page struct {
 	UserID   int

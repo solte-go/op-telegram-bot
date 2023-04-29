@@ -11,7 +11,7 @@ import (
 func (s *Storage) GetAllUsers() (users []models.User, err error) {
 	defer func() { err = e.WrapIfErr("can't get users from database", err) }()
 
-	query := `SELECT user_name, topic, user_language FROM users`
+	query := `SELECT user_name, topic, user_language, seq_offset FROM users`
 	rows, err := s.db.Query(query)
 	if err != nil {
 		return nil, err
@@ -21,7 +21,7 @@ func (s *Storage) GetAllUsers() (users []models.User, err error) {
 
 	for rows.Next() {
 		var u models.User
-		if err := rows.Scan(&u.Name, &u.Topic, &u.Language); err != nil {
+		if err := rows.Scan(&u.Name, &u.Topic, &u.Language, &u.Offset); err != nil {
 			return nil, err
 		}
 		users = append(users, u)
@@ -72,6 +72,17 @@ func (s *Storage) UpdateUserLang(user *models.User) error {
 	query := `UPDATE users SET user_language = $1 WHERE user_name = $2;`
 
 	_, err := s.db.Exec(query, user.Language, user.Name)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Storage) UpdateUserOffset(user *models.User) error {
+	query := `UPDATE users SET seq_offset = $1 WHERE user_name = $2;`
+
+	_, err := s.db.Exec(query, user.Offset, user.Name)
 	if err != nil {
 		return err
 	}

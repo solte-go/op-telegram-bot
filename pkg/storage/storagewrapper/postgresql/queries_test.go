@@ -32,6 +32,7 @@ func (s *querySuiteTests) Test_Save() {
 		Name:     "test",
 		Language: "",
 		Topic:    "",
+		Offset:   0,
 	}
 
 	s.Suite.Run("SaveUser", func() {

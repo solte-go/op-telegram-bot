@@ -60,7 +60,7 @@ func (p *Processor) doCmd(text string, user *models.User) error {
 func (p *Processor) randomWords(user *models.User) (err error) {
 	defer func() { err = e.WrapIfErr("can't execute command: random page", err) }()
 
-	var word *storage.Words
+	var word *models.Words
 	sendMsg := newMessageSender(user.ChatID, p.tg)
 
 	word, err = p.storage.PickRandomWord(user)
