@@ -7,4 +7,5 @@ setOutput() {
 tagFmt="^v?[0-9]+\.[0-9]+\.[0-9]+$"
 tag="$(git for-each-ref --sort=-v:refname --format '%(refname:lstrip=2)' | grep -E "$tagFmt" | head -n 1)"
 
+
 setOutput "tag" "$tag"
