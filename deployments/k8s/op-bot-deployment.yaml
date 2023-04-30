@@ -41,7 +41,17 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: database-creds
-                  key: pgsql-username
+                  key: pgsql-user
+            - name: PSQL_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: database-creds
+                  key: pgsql-host
+            - name: PSQL_DBNAME
+              valueFrom:
+                secretKeyRef:
+                  name: database-creds
+                  key: pgsql-database
             - name: TG_TOKEN
               valueFrom:
                 secretKeyRef:

@@ -198,29 +198,29 @@ func (s *StorageCache) PickRandomWord(user *models.User) (word *models.Words, er
 	return word, nil
 }
 
-func (s *StorageCache) randomWordsWithoutTopic() (page *models.Words, err error) {
-	//if s.dialect.SyncAlphabet() {
-	//	s.dialect.Alphabet.Letters, err = s.storage.dialect.GetAlphabet()
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//}
-	//
-	//if len(s.dialect.Alphabet.Letters) == 0 {
-	//	return nil, errors.New("no words in db")
-	//}
-	//
-	//source := rand.NewSource(time.Now().UnixNano())
-	//rand.New(source)
-	//n := rand.Intn(len(s.dialect.Alphabet.Letters))
-	//
-	//res, err := s.storage.dialect.GetWords(s.dialect.Alphabet.Letters[n])
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//n = rand.Intn(len(res))
-	//rndWord := res[n]
-
-	return page, nil
-}
+//func (s *StorageCache) randomWordsWithoutTopic() (page *models.Words, err error) {
+//	if s.dialect.SyncAlphabet() {
+//		s.dialect.Alphabet.Letters, err = s.storage.dialect.GetAlphabet()
+//		if err != nil {
+//			return nil, err
+//		}
+//	}
+//
+//	if len(s.dialect.Alphabet.Letters) == 0 {
+//		return nil, errors.New("no words in db")
+//	}
+//
+//	source := rand.NewSource(time.Now().UnixNano())
+//	rand.New(source)
+//	n := rand.Intn(len(s.dialect.Alphabet.Letters))
+//
+//	res, err := s.storage.dialect.GetWords(s.dialect.Alphabet.Letters[n])
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	n = rand.Intn(len(res))
+//	rndWord := res[n]
+//
+//	return page, nil
+//}
