@@ -1,3 +1,7 @@
+[api]
+    worker_port = 2112
+    ui_port = 8080
+
 [telegram]
     host = "api.telegram.org"
     token = ""
@@ -10,4 +14,4 @@
     dbname = ""
 
 [logging]
-    level = "debug"
+    loglevel = "debug"

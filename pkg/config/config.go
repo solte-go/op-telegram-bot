@@ -2,18 +2,25 @@ package config
 
 import (
 	"errors"
-	"github.com/joho/godotenv"
-	"github.com/spf13/viper"
 	"io/fs"
 	"os"
 	"strconv"
+
+	"github.com/joho/godotenv"
+	"github.com/spf13/viper"
 )
 
 type Config struct {
 	Environment string
+	API         *API        `mapstructure:"api"`
 	Logging     *Logging    `mapstructure:"logging"`
 	PostgreSQL  *PostgreSQL `mapstructure:"postgresql"`
 	TG          *TG         `mapstructure:"telegram"`
+}
+
+type API struct {
+	WorkerPort int `mapstructure:"worker_port"`
+	UIPort     int `mapstructure:"ui_port"`
 }
 
 type TG struct {
@@ -39,11 +46,9 @@ func LoadConf(env string) (Config, error) {
 	var confFileName string
 	if env == "prod" {
 		confFileName = "prod"
-		err := c.readEnvironment("dev.env")
-		if err != nil {
-			return Config{}, err
-		}
-	} else {
+	}
+
+	if env == "dev" {
 		confFileName = "dev"
 		err := c.readEnvironment("../dev.env")
 		if err != nil {

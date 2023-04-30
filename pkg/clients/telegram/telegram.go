@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"path"
 	"strconv"
+
 	e "telegram-bot/solte.lab/pkg/errhandler"
 )
 
@@ -75,7 +76,7 @@ func (c *Client) doRequest(method string, query url.Values) (data []byte, err er
 		Path:   path.Join(c.basePath, method),
 	}
 
-	//TODO retry with backoff
+	// TODO retry with backoff
 
 	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
 	if err != nil {
@@ -83,9 +84,10 @@ func (c *Client) doRequest(method string, query url.Values) (data []byte, err er
 	}
 
 	req.URL.RawQuery = query.Encode()
+
 	resp, err := c.client.Do(req)
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		fmt.Printf("unexpected respond: %v", resp)
 	}
 
 	if err != nil {

@@ -2,11 +2,14 @@ package telegram
 
 import (
 	"errors"
+
 	"go.uber.org/zap"
 	"telegram-bot/solte.lab/pkg/clients/telegram"
-	e "telegram-bot/solte.lab/pkg/errhandler"
 	"telegram-bot/solte.lab/pkg/events"
+	"telegram-bot/solte.lab/pkg/models"
 	"telegram-bot/solte.lab/pkg/storage"
+
+	e "telegram-bot/solte.lab/pkg/errhandler"
 )
 
 type Processor struct {
@@ -21,8 +24,10 @@ type Meta struct {
 	Username string
 }
 
-var ErrUnknownEventType = errors.New("unknown event type")
-var ErrUnknownMetaType = errors.New("unknown meta type")
+var (
+	ErrUnknownEventType = errors.New("unknown event type")
+	ErrUnknownMetaType  = errors.New("unknown meta type")
+)
 
 func New(client *telegram.Client, storage storage.Storage, logger *zap.Logger) *Processor {
 	return &Processor{
@@ -58,7 +63,6 @@ func (p *Processor) Process(event events.Event) error {
 	default:
 		return e.Wrap("can't process message", ErrUnknownEventType)
 	}
-
 }
 
 func (p *Processor) processMessage(event events.Event) error {
@@ -66,7 +70,17 @@ func (p *Processor) processMessage(event events.Event) error {
 	if err != nil {
 		return e.Wrap("can't process message", err)
 	}
-	if err := p.doCmd(event.Text, meta.ChatID, meta.Username); err != nil {
+
+	user := &models.User{
+		Name:   meta.Username,
+		ChatID: meta.ChatID,
+		Sequence: &models.Sequence{
+			Words:    nil,
+			NextWord: 0,
+		},
+	}
+
+	if err := p.doCmd(event.Text, user); err != nil {
 		return e.Wrap("can't process message", err)
 	}
 

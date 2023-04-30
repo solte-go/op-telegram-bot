@@ -1,0 +1,50 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches: ["main"]
+    tags:
+      - '.**'
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  build-image:
+    name: Build Image
+    runs-on: [self-hosted, op-runner]
+    environment: Production
+    steps:
+      - name: Coping repository files
+        uses: actions/checkout@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          registry: index.docker.io/v1/
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: echo commit message
+        run: |  
+          echo "$(git show -s --format=%s)" 
+
+      - name: Extract tag
+        id: tag_extractor
+        uses: solte-go/git-tag-output-action@master
+
+      - name: Docker Metadata for Final Image Build
+        id: docker_meta
+        uses: docker/metadata-action@v4
+        with:
+          images: solte/op-bot
+          flavor: |
+            latest=false
+
+      - name: Docker Build and Push to Docker Hub
+        uses: docker/build-push-action@v4
+        with:
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.tag_extractor.outputs.tags }}
+          labels: ${{ steps.docker_meta.outputs.labels }}
+#          platforms: linux/amd64,linux/arm64,linux/arm/v7

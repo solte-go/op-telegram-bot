@@ -2,11 +2,11 @@ package logging
 
 import (
 	"os"
-	"telegram-bot/solte.lab/pkg/config"
 	"time"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"telegram-bot/solte.lab/pkg/config"
 )
 
 func NewLogger(config *config.Logging) (*zap.Logger, error) {
@@ -18,8 +18,8 @@ func NewLogger(config *config.Logging) (*zap.Logger, error) {
 
 	cw := zapcore.Lock(os.Stdout)
 	je := zapcore.NewJSONEncoder(zapcore.EncoderConfig{
-		TimeKey:        "init_timestamp",
-		LevelKey:       "log_level",
+		TimeKey:        "timestamp",
+		LevelKey:       "level",
 		NameKey:        "log_name",
 		CallerKey:      "caller",
 		MessageKey:     "msg",

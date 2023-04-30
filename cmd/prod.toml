@@ -1,0 +1,17 @@
+[api]
+    worker_port = 2112
+    ui_port = 8080
+
+[telegram]
+    host = "api.telegram.org"
+    token = ""
+
+[postgresql]
+    host =""
+    port = 5432
+    username = ""
+    password = ""
+    dbname = ""
+
+[logging]
+    loglevel = "debug"

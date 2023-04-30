@@ -8,8 +8,8 @@ func NewTestConfig() *Config {
 			Host:     "localhost",
 			Port:     5432,
 			Username: "postgres",
-			Password: "supra**",
-			DBName:   "telegram_dev",
+			Password: "postgres",
+			DBName:   "telegram_bot_test",
 		},
 		TG: &TG{
 			Token: "",

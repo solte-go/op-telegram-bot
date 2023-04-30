@@ -1,9 +1,11 @@
-package event_consumer
+package eventconsumer
 
 import (
+	"context"
+	"time"
+
 	"go.uber.org/zap"
 	"telegram-bot/solte.lab/pkg/events"
-	"time"
 )
 
 type Consumer struct {
@@ -22,8 +24,15 @@ func New(fetcher events.Fetcher, processor events.Processor, batchSize int, logg
 	}
 }
 
-func (c *Consumer) Start() error {
+func (c *Consumer) Start(ctx context.Context) error {
 	for {
+		select {
+		case <-ctx.Done():
+			c.logger.Warn("received context done, stopping consumer")
+			return ctx.Err()
+		default:
+		}
+
 		gotEvents, err := c.fetcher.Fetch(c.batchSize)
 		if err != nil {
 			c.logger.Error("can't fetch events", zap.Error(err))
@@ -42,12 +51,11 @@ func (c *Consumer) Start() error {
 	}
 }
 
-//todo: 1. Data recovery, fallbacks (retry, save to memory, return to db).
-//todo: 2 batch processing errors
-
+// todo: 1. Data recovery, fallbacks (retry, save to memory, return to db).
+// todo: 2 batch processing errors
 func (c *Consumer) eventsHandler(events []events.Event) error {
 	for _, event := range events {
-		//c.logger.Info(fmt.Sprintf("Got new event: %s", event.Text))
+		// c.logger.Info(fmt.Sprintf("Got new event: %s", event.Text))
 
 		if err := c.processor.Process(event); err != nil {
 			c.logger.Error("can't process event", zap.Error(err))
