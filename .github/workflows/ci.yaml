@@ -64,6 +64,9 @@ jobs:
       - name: Run vet & lint
         run: |
           go vet ./...
+      
+      - name: Build containers
+        run: docker build --build-arg ${{ steps.tag_extractor.outputs.tag }} -t solte/op-bot:${{ steps.tag_extractor.outputs.tag }} .
 
       - name: Build & start containers
         run: make ci_up

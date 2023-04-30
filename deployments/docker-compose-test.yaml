@@ -36,25 +36,25 @@ services:
     networks:
       - bot-network
   bot:
-    build:
-      context: ../
-      args:
-        - VERSION=$VERSION
-      dockerfile: Dockerfile
-      target: op-bot
+#    build:
+#      context: ../
+#      args:
+#        - VERSION=$VERSION
+#     dockerfile: Dockerfile
+#      target: op-bot
     container_name: telegram-bot
-    env_file:
-      - ./.env
-    image: "bot:${VERSION}"
+#    env_file:
+#      - ./.env
+    image: "solte/op-bot:${VERSION}"
     depends_on:
       postgres:
         condition: service_healthy
-#    deploy:
-#      restart_policy:
-#        condition: on-failure
-#        delay: 5s
-#        max_attempts: 3
-#        window: 120s
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
     ports:
       - "2112:2112"
     networks:
