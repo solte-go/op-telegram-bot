@@ -36,16 +36,16 @@ services:
     networks:
       - bot-network
   bot:
-#    build:
-#      context: ../
-#      args:
-#        - VERSION=$VERSION
-#     dockerfile: Dockerfile
-#      target: op-bot
+    build:
+      context: ../
+      args:
+        - VERSION=$VERSION
+      dockerfile: Dockerfile
+      target: op-bot
     container_name: telegram-bot
-#    env_file:
-#      - ./.env
-    image: "solte/op-bot:${VERSION}"
+    env_file:
+      - ./.env
+    image: "bot:${VERSION}"
     depends_on:
       postgres:
         condition: service_healthy
