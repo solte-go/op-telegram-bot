@@ -22,7 +22,7 @@ type querySuiteTests struct {
 
 func (s *querySuiteTests) SetupSuite() {
 	conf := config.NewTestConfig()
-	st, err := New(conf.PostgreSQL)
+	st, err := New(conf.Postgres)
 	s.Suite.NoError(err)
 	s.storage = st
 }

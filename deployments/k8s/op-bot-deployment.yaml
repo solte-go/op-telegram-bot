@@ -28,7 +28,7 @@ spec:
         - name: op-bot-registry
       containers:
         - name: op-bot
-          image: solte/op-bot:0.1.3
+          image: solte/op-bot:0.1.41
           ports:
             - containerPort: 8080
           env:
@@ -52,6 +52,11 @@ spec:
                 secretKeyRef:
                   name: database-creds
                   key: pgsql-database
+            - name: PSQL_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: database-creds
+                  key: pgsql-port
             - name: TG_TOKEN
               valueFrom:
                 secretKeyRef:

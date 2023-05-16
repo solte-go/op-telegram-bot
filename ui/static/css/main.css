@@ -1,0 +1,97 @@
+.project-row{
+    margin-bottom: 4px;
+}
+.project-title-bar{
+    top: 11px;
+    position: relative;
+    left: 5px;
+    /*font-weight: 600;*/
+    cursor: pointer;
+    /*width: 80%;*/
+    /*float: left;*/
+}
+
+.row-process-status-ok{
+    background-image: url("../img/done.png");
+    width: 45px;
+    height: 45px;
+    background-repeat: no-repeat;
+    position: relative;
+    background-size: 45px;
+    left: 4px;
+}
+.row-process-status-paused{
+    background-image: url("../img/paused.png");
+    width: 45px;
+    height: 45px;
+    background-repeat: no-repeat;
+    position: relative;
+    background-size: 45px;
+    left: 4px;
+}
+.row-process-status-error{
+    background-image: url("../img/reject.png");
+    width: 45px;
+    height: 45px;
+    background-repeat: no-repeat;
+    position: relative;
+    background-size: 45px;
+    left: 4px;
+}
+
+.project-details{
+    background-color: #f1f1f1;
+    padding-top: 5px;
+}
+.project-details-list{
+    list-style: none;
+    padding-left: 14px;
+    padding-bottom: 7px;
+}
+
+.project-details-list li{
+    margin: 2px;
+}
+
+.badge-cm-style{
+    width: 150px;
+}
+
+.project-header{
+    background-color: #dfdfdf;
+    border-radius: 0.3rem;
+    height: 46px;
+}
+
+.project-content-font{
+    font-weight: 300;
+}
+.project-content-font-weight{
+    font-weight: 600;
+    padding-left: 8px;
+    padding-right: 12px;
+}
+
+.project-sla-content{
+    margin: 16px;
+}
+
+.header-title-name{
+    font-weight: 600;
+    color: #000000;
+}
+.header-title-status-error{
+    color: #a91a1a;
+}
+
+.header-title-status-ok{
+    color: #36a136;
+}
+
+.projects-grid{
+  margin: 3px;
+}
+
+.projects-grid-col-names{
+    width: 165px;
+}

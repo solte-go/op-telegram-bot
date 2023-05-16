@@ -8,31 +8,47 @@ import (
 	"telegram-bot/solte.lab/pkg/storage/storagewrapper/postgresql/internal"
 )
 
+var storagePool map[string]*Storage
+
+func GetStorage(alias string) (*Storage, error) {
+	if storagePool == nil {
+		return nil, fmt.Errorf("storage pool is empty")
+	}
+	storage, ok := storagePool[alias]
+	if ok {
+		return storage, nil
+	}
+	return nil, fmt.Errorf("storage with alias %s not found", alias)
+}
+
 type Storage struct {
 	db *sql.DB
 }
 
-func New(conf *config.PostgreSQL) (*Storage, error) {
-	db, err := newDB(conf)
+func New(conf *config.Postgres) (*Storage, error) {
+	db, err := newDB(conf.OPDB)
 	if err != nil {
 		return nil, err
 	}
 
 	storage := &Storage{db: db}
 
-	err = storage.init()
+	err = storage.init(conf.OPDB.Alias)
 	if err != nil {
-		fmt.Println(err)
 		return nil, fmt.Errorf("can't initialize storage: %w", err)
 	}
+
+	st := make(map[string]*Storage)
+	storagePool = st
+	storagePool[conf.OPDB.Alias] = storage
 
 	return storage, nil
 }
 
-func newDB(conf *config.PostgreSQL) (*sql.DB, error) {
-	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", conf.Host, conf.Port, conf.Username, conf.Password, conf.DBName)
+func newDB(conf *config.PostgresSQLConfig) (*sql.DB, error) {
+	psqlConn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", conf.Host, conf.Port, conf.Username, conf.Password, conf.DBName)
 
-	db, err := sql.Open("postgres", psqlconn)
+	db, err := sql.Open("postgres", psqlConn)
 	if err != nil {
 		return nil, err
 	}
@@ -64,8 +80,8 @@ func (s *Storage) DropTables() error {
 	return nil
 }
 
-func (s *Storage) init() error {
-	q := internal.CreateTables()
+func (s *Storage) init(alias string) error {
+	q := internal.CreateTables(alias)
 	_, err := s.db.Exec(q)
 	if err != nil {
 		return fmt.Errorf("can't create table: %w", err)

@@ -3,6 +3,7 @@ package storagewrapper
 import (
 	"context"
 	"errors"
+	"fmt"
 	"math/rand"
 	"telegram-bot/solte.lab/pkg/config"
 	e "telegram-bot/solte.lab/pkg/errhandler"
@@ -18,7 +19,7 @@ type StorageCache struct {
 	storage *contract
 }
 
-func New(ctx context.Context, conf *config.PostgreSQL) (*StorageCache, error) {
+func New(ctx context.Context, conf *config.Postgres) (*StorageCache, error) {
 	d := dialect.New()
 	st, err := postgresql.New(conf)
 	if err != nil {
@@ -168,6 +169,7 @@ func (s *StorageCache) PickRandomWord(user *models.User) (word *models.Words, er
 			}
 		}
 
+		fmt.Println("newOffset", newOffset)
 		user.Offset = newOffset
 
 		// Shuffle words

@@ -45,7 +45,7 @@ func (s *Storage) GetWords(offset int) (words []*models.Words, newOffset int, er
 
 	newOffset = offset + len(words)
 
-	return words, offset, err
+	return words, newOffset, err
 }
 
 func (s *Storage) GetWordsFromTopic(topicTitle string, offset int) (words []*models.Words, newOffset int, err error) {

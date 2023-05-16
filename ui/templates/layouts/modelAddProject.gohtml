@@ -1,0 +1,170 @@
+{{define "add_project"}}
+    <div class="modal fade" id="addProjectModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+             <div class="modal-content">
+                 <div class="modal-error">
+                     <div id="addProjectModalAlert" class="alert alert-warning alert-dismissible fade show" role="alert" style="display: none">
+                     </div>
+                 </div>
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add New Words:</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addNewProject" action="/admin/add-words" method="POST">
+                            <div class="mb-3">
+                                <label for="projectQuery" class="form-label">Please words</label>
+                                <textarea type="text" class="form-control" id="projectQuery" rows="3" name="jql"></textarea>
+                                <div id="wordsString"
+                                     class="form-text">
+                                     Exp: Ohjelmoija,Programmer,Программист,Profession;
+                                </div>
+                            </div>
+                            <button type="submit" id="jqlIsChecked" class="btn btn-success m-1 float-end">Add New Words</button>
+                            <input type="reset" class="btn btn-secondary m-1 float-end" value="Reset">
+                        </form>
+                    </div>
+             </div>
+        </div>
+    </div>
+
+<script>
+    $("#addNewProject").on("submit", async function(event) {
+        event.preventDefault();
+        let Alerts = $('#addProjectModalAlert');
+
+        let form = $(this);
+        let url = form.attr('action');
+        let requestData = {
+            // project: $('#projectName').val(),
+            words_string: $('#projectQuery').val(),
+            // manager:$('#projectManager').val(),
+            // time_to_react:$('#slaTimeToReact').val(),
+            // time_to_resolve:$('#slaTimeToResolve').val(),
+            // stuck_tickets:$('#slaStuck').val(),
+        };
+        const response = await fetch(url, {
+            method: form.attr('method'),
+            credentials: "include",
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(requestData),
+        });
+
+        if (response.status === 401){
+            location.href = '/';
+            return;
+        }
+        if (response.status === 409){
+            while (Alerts.firstChild) {
+                Alerts.removeChild(Alerts.lastChild);
+            }
+            Alerts.removeClass('alert-warning alert-success');
+            Alerts.addClass('alert alert-warning justify-content-center');
+
+            Alerts.text(response.statusText + ": Duplicate name of project").css("display", "grid");
+            setTimeout(function () {
+                Alerts.fadeOut("slow");
+            }, 5000);
+            SubmitButton.attr('disabled','disabled');
+            return;
+        }
+
+        if (!response.ok) {
+            while (Alerts.firstChild) {
+                Alerts.removeChild(Alerts.lastChild);
+            }
+            Alerts.removeClass('alert-warning alert-success');
+            Alerts.addClass('alert alert-warning justify-content-center');
+
+            Alerts.text(response.statusText).css("display", "grid");
+            setTimeout(function () {
+                Alerts.fadeOut("slow");
+            }, 5000);
+
+            SubmitButton.attr('disabled','disabled');
+            return;
+        }
+
+        const data = await response.json();
+        while (Alerts.firstChild) {
+            Alerts.removeChild(Alerts.lastChild);
+        }
+
+        Alerts.removeClass('alert-warning');
+        Alerts.addClass('alert alert-success justify-content-center');
+
+        Alerts.text(data).css("display", "grid");
+
+        setTimeout(function () {
+            Alerts.fadeOut("slow");
+            $('#addProjectModal').modal('hide');
+            $('#addNewProject').trigger("reset");
+            SubmitButton.attr('disabled','disabled');
+        }, 2800);
+
+        setTimeout(function () {
+            reloadPage()
+        }, 3000);
+
+        // console.log(data)
+    });
+
+    async function getJQLVerification() {
+        let Alerts = $('#addProjectModalAlert');
+        let SubmitButton = $("#jqlIsChecked");
+        let requestData = {
+            jql: $('#projectQuery').val(),
+        };
+        const response = await fetch(
+            '/authorized/api/v1/verifyJQLString',
+            {
+                method: 'POST',
+                credentials: "include",
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(requestData),
+            }
+        );
+        if (response.status === 401){
+            location.href = '/';
+            return;
+        }
+
+        if (!response.ok) {
+            while (Alerts.firstChild) {
+                Alerts.removeChild(Alerts.lastChild);
+            }
+            Alerts.removeClass('alert-warning alert-success');
+            Alerts.addClass('alert alert-warning justify-content-center');
+            Alerts.append([
+                $('<span>').text("JQL query is not correct")
+            ]);
+
+            Alerts.text(response.statusText + ": JQL query is not correct").css("display", "grid");
+            setTimeout(function () {
+                Alerts.fadeOut("slow");
+            }, 5000);
+
+            SubmitButton.attr('disabled','disabled');
+            return;
+        }
+
+        const data = await response.json();
+        while (Alerts.firstChild) {
+            Alerts.removeChild(Alerts.lastChild);
+        }
+
+        Alerts.removeClass('alert-warning');
+        Alerts.addClass('alert alert-success justify-content-center');
+        Alerts.append([
+            $('<span>').text(data.message)
+        ]);
+
+        Alerts.text(data.message + " Request return " +data.result.total + " issues").css("display", "grid");
+        SubmitButton.removeAttr("disabled");
+        setTimeout(function () {
+            Alerts.fadeOut("slow");
+        }, 3000);
+
+    }
+</script>
+{{end}}

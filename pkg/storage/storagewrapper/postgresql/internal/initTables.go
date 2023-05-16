@@ -1,7 +1,22 @@
 package internal
 
-func CreateTables() string {
-	return `CREATE TABLE IF NOT EXISTS public.users (
+const opdb = "opdb"
+
+func CreateTables(alias string) string {
+	if alias == opdb {
+		return `
+	CREATE TABLE IF NOT EXISTS public.admins (
+	    id SERIAL PRIMARY KEY,
+	    user_name VARCHAR NOT NULL,
+	    email VARCHAR NOT NULL CONSTRAINT "Admins_email_key" UNIQUE,
+	    hashed_password VARCHAR NOT NULL,
+	    hashed_token VARCHAR NOT NULL
+	); 
+	
+	ALTER TABLE admins
+    	OWNER TO postgres;
+	
+	CREATE TABLE IF NOT EXISTS public.users (
     	id SERIAL PRIMARY KEY,
     	user_name VARCHAR NOT NULL CONSTRAINT "Users_pk" UNIQUE,
     	topic VARCHAR NOT NULL DEFAULT 'all', 
@@ -36,6 +51,8 @@ func CreateTables() string {
 	ALTER TABLE words
     	OWNER TO postgres;
 `
+	}
+	return ""
 }
 
 //CREATE TABLE IF NOT EXISTS public.links (

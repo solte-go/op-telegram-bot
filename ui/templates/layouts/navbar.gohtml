@@ -1,0 +1,24 @@
+{{define "navbar"}}
+    <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 border-bottom">
+        <a href="/admin" class="d-flex align-items-center col-md-3 mb-2 mb-md-0 text-dark text-decoration-none">
+            <h4 class="ms-3">Oranssi Pupu Admin Page</h4>
+        </a>
+
+        <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+{{/*            <li><a href="#" class="nav-link px-2 link-secondary">Home</a></li>*/}}
+        </ul>
+        {{if .}}
+            <div id="userData" class="col-md-3 text-end">
+                <span class="btn bg-light text-dark m-2">Hello, {{.}}</span>
+                <button type="button" class="btn btn-outline-primary me-2" onclick="userLogOut()">Logout</button>
+            </div>
+        {{else}}
+            <div id="userData" class="col-md-3 text-end">
+                <button type="button" class="btn btn-outline-primary me-2" href="/login">Login</button>
+            </div>
+        {{end}}
+    </header>
+<script>
+    // createUser()
+</script>
+{{end}}

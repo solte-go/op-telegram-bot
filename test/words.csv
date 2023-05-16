@@ -1,0 +1,60 @@
+0,k,essentials,kiitos,thank you,спасибо,2023-04-30 09:03:17.530679
+1,f,family,perhe,family,семья,2023-04-30 09:03:17.530679
+2,p,family,äiti,mother,мама,2023-04-30 09:03:17.530679
+3,i,family,isä,father,папа,2023-04-30 09:03:17.530679
+4,s,family,sisko,sister,сестра,2023-04-30 09:03:17.530679
+5,a,animals,eläin,animal,животное,2023-04-30 09:03:17.530679
+6,a,animals,ankka,duck,утка,2023-04-30 09:03:17.530679
+7,s,animals,susi,wolf,волк,2023-04-30 09:03:17.530679
+8,k,animals,käärme,snake,змея,2023-04-30 09:03:17.530679
+9,k,animals,karhu,bear,медведь,2023-04-30 09:03:17.530679
+10,p,animals,pupu,bunny,кролик,2023-04-30 09:03:17.530679
+11,h,body,huuli,lip,губа,2023-04-30 09:03:17.530679
+12,k,city,kaupunki,city,город,2023-04-30 09:03:17.530679
+13,p,city,pääkaupunki,capital,столица,2023-04-30 09:03:17.530679
+14,s,family,suku,"family, relatives","семья, родственники",2023-04-30 09:03:17.530679
+15,b,city,bussi,bus,автобус,2023-04-30 09:03:17.530679
+16,e,family,eno,uncle (mother's brother),дядя (брат мамы),2023-04-30 09:03:17.530679
+17,s,family,setä,(father's brother),дядя (брат папы),2023-04-30 09:03:17.530679
+18,v,family,veli,brother,брат,2023-04-30 09:03:17.530679
+19,k,flora,kukka,flower,цветок,2023-04-30 09:03:17.530679
+20,k,food,kakku,cake,торт,2023-04-30 09:03:17.530679
+21,k,food,kahvi,coffee,кофе,2023-04-30 09:03:17.530679
+22,m,colors,musta,black,чёрный,2023-04-30 09:03:17.530679
+23,p,colors,pinkki,pink,розовый,2023-04-30 09:03:17.530679
+24,s,colors,sininen,blue,синий,2023-04-30 09:03:17.530679
+25,n,numbers,nolla,zero,ноль,2023-04-30 09:03:17.530679
+26,y,numbers,yksi,one,один,2023-04-30 09:03:17.530679
+27,k,numbers,kaksi,two,два,2023-04-30 09:03:17.530679
+28,k,numbers,kolme,three,три,2023-04-30 09:03:17.530679
+29,n,numbers,neljä,four,четыре,2023-04-30 09:03:17.530679
+30,v,numbers,viisi,five,пять,2023-04-30 09:03:17.530679
+31,k,numbers,kuusi,six,шесть,2023-04-30 09:03:17.530679
+32,s,numbers,seitsemän,seven,семь,2023-04-30 09:03:17.530679
+33,k,numbers,kahdeksan,eight,восемь,2023-04-30 09:03:17.530679
+34,y,numbers,yhdeksän,nine,девять,2023-04-30 09:03:17.530679
+35,k,numbers,kymmenen,ten,десять,2023-04-30 09:03:17.530679
+58,k,animals,kissa,cat,кошка,2023-04-30 09:03:17.530679
+59,k,animals,koira,dog,собака,2023-04-30 09:03:17.530679
+60,l,animals,lintu,bird,птица,2023-04-30 09:03:17.530679
+61,t,food,tee,tea,чай,2023-04-30 09:03:17.530679
+62,v,food,viini,wine,вино,2023-04-30 09:03:17.530679
+63,s,family,sukupuu,family tree,семейное дерево,2023-04-30 09:03:17.530679
+64,l,family,lapseton,childfree (childless),бездетный (чайлдфри),2023-04-30 09:03:17.530679
+65,l,adjectives,laiska,lazy,ленивый,2023-04-30 09:03:17.530679
+66,p,adjectives,pitkä,tall,высокий,2023-04-30 09:03:17.530679
+67,k,basic items,kirja,a book,книга,2023-04-30 09:03:17.530679
+68,k,basic items,kännykkä,mobile phone,мобильный телефон,2023-04-30 09:03:17.530679
+69,l,basic items,laturi,charger,зарядное устройство,2023-04-30 09:03:17.530679
+70,r,basic items,reppu,backpack,рюкзак,2023-04-30 09:03:17.530679
+71,k,city,kirjasto,library,библиотека,2023-04-30 09:03:17.530679
+72,m,geography,maa,country land earth ground,страна земля,2023-04-30 09:03:17.530679
+73,t,body,tukka,hair,волосы,2023-04-30 09:03:17.530679
+74,t,work,työtön,unemployed,безработный,2023-04-30 09:03:17.530679
+75,a,transport,ajokortti,driving license,водительские права,2023-04-30 09:03:17.530679
+76,k,conversation,kysymys,question,вопрос,2023-04-30 09:03:17.530679
+78,a,verbs,ajaa,to drive,водить,2023-04-30 09:03:17.530679
+77,v,conversation,vastaus,answer,ответ,2023-04-30 09:03:17.530679
+79,k,verbs,kirjoittaa,to write,писать,2023-04-30 09:03:17.530679
+80,p,religion,pappi,priest,религия,2023-04-30 09:03:17.530679
+81,p,colors,punainen,red,красный,2023-04-30 09:32:52.373835

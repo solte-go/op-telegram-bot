@@ -1,0 +1,125 @@
+{{define "change_sync_params"}}
+<div class="modal fade" id="changeSyncParamsModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-error">
+                <div id="changeSyncParamsModalAlert" class="alert alert-warning alert-dismissible fade show" role="alert" style="display: none">
+                </div>
+            </div>
+            <div class="modal-header">
+                <h5 class="modal-title">Change sync options</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="changeSyncParams" action="/authorized/api/v1/changeProjectSyncParams" method="POST">
+{{/*                    <label for="projects" class="form-label">Select the project</label>*/}}
+{{/*                    <select id="projects" class="form-select mb-3" aria-label="Please select project" name="projects">*/}}
+{{/*                        <option selected>Please select project</option>*/}}
+{{/*                        <option value="1">One</option>*/}}
+{{/*                        <option value="2">Two</option>*/}}
+{{/*                        <option value="3">Three</option>*/}}
+{{/*                    </select>*/}}
+                    <div class="mb-3">
+                        <label for="projects" class="form-label">Project for edit</label>
+                        <input type="text" class="form-control" id="projects" name="project" disabled>
+                    </div>
+                    <label for="projectsStatus" class="form-label">Select project status</label>
+                    <select id="projectsStatus" class="form-select mb-3" aria-label="Please select project" name="projects">
+                        <option value="ok" selected>Ok</option>
+                        <option value="initial">Full Sync</option>
+                        <option value="stopped">Stopped</option>
+                    </select>
+                    <div class="mb-3">
+                        <label for="flatpickr" class="form-label">Select the date from which you want to sync the project</label>
+                        <input type="text" class="form-control" id="flatpickr" name="date">
+                    </div>
+{{/*                    <div class="mb-3 form-check">*/}}
+{{/*                        <input type="checkbox" class="form-check-input" id="syncOpts" name="sync_opts"/>*/}}
+{{/*                        <label class="form-check-label" for="initialSync" >Synchronize the entire project?</label>*/}}
+{{/*                    </div>*/}}
+                    <button type="submit" class="btn btn-primary m-1 float-end">Send new params</button>
+                    <input type="reset" class="btn btn-secondary m-1 float-end"  data-bs-dismiss="modal" value="Close">
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function changeProjectSyncOption(value) {
+        $('#projects').val(value);
+        $('#changeSyncParamsModal').modal('show');
+    }
+
+    let example = flatpickr('#flatpickr');
+    $("#changeSyncParams").on("submit", function(event) {
+        event.preventDefault();
+        let form = $(this);
+        let url = form.attr('action');
+        // let syncOpts = "false";
+        // if ($('#syncOpts').is(":checked")) {syncOpts = "true"}
+        let data = {
+            project: $('#projects').val(),
+            date: $('#flatpickr').val(),
+            sync_opts: $('#projectsStatus :selected').val(),
+        };
+        fetch(url, {
+            method: form.attr('method'),
+            credentials: "include",
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data),
+        })
+            .then(function(response) {
+                console.log(response.status); // Will show you the status
+                if (!response.ok) {
+                    throw new Error("HTTP status " + response.status);
+                }
+                return response.json();
+            })
+            .then((data) => {
+                let Alerts = $('#changeSyncParamsModalAlert');
+                while (Alerts.firstChild) {
+                    Alerts.removeChild(Alerts.lastChild);
+                }
+
+                Alerts.removeClass('alert-warning');
+                Alerts.addClass('alert alert-success justify-content-center');
+                Alerts.append([
+                    $('<span>').text(data)
+                ]);
+
+                Alerts.text(data).css("display", "grid");
+
+                setTimeout(function () {
+                    Alerts.fadeOut("slow");
+                    $('#changeSyncParamsModal').modal('hide');
+                    $('#changeSyncParams').trigger("reset");
+                }, 3000);
+
+                setTimeout(function () {
+                    reloadPage()
+                }, 3200);
+
+            })
+            .catch(function (error) {
+                let Alerts = $('#changeSyncParamsModalAlert');
+                while (Alerts.firstChild) {
+                    Alerts.removeChild(Alerts.lastChild);
+                }
+
+                Alerts.removeClass('alert-warning, alert-success');
+                Alerts.addClass('alert alert-warning justify-content-center');
+                Alerts.append([
+                    $('<span>').text(error)
+                ]);
+
+                Alerts.text(error).css("display", "grid");
+
+                setTimeout(function () {
+                    Alerts.fadeOut("slow");
+                }, 3000);
+
+                console.log(error);
+            });
+    });
+</script>
+{{end}}

@@ -28,42 +28,42 @@ const (
 	CmdPhraseOfTheDay = "/phraseOfDay"
 )
 
-func (p *Processor) doCmd(text string, user *models.User) error {
-	p.logger.Debug("get new command", zap.String("content", text), zap.String("From User", user.Name))
+func (r *Responder) doCmd(user *models.User) error {
+	r.logger.Debug("get new command", zap.String("content", user.Cmd), zap.String("From User", user.Name))
 
-	cmd, arg := parseCommand(text)
+	cmd, arg := parseCommand(user.Cmd)
 
 	switch cmd {
 	case CmdStart:
-		return p.sendHello(user)
+		return r.sendHello(user)
 	case CmdHelp:
-		return p.sendHelp(user)
+		return r.sendHelp(user)
 	case CmdHelpRu:
-		return p.sendHelpRu(user)
+		return r.sendHelpRu(user)
 	case CmdHelpEn:
-		return p.sendHelpEn(user)
+		return r.sendHelpEn(user)
 	case CmdRndWords:
-		return p.randomWords(user)
+		return r.randomWords(user)
 	case CmdPhraseOfTheDay:
-		return p.phraseOfTheDay(user, arg)
+		return r.phraseOfTheDay(user, arg)
 	case CmdTopics:
-		return p.sendTopics(user)
+		return r.sendTopics(user)
 	case CmdSetLanguage:
-		return p.setLang(user, arg)
+		return r.setLang(user, arg)
 	case CmdSetTopic:
-		return p.setTopic(user, arg)
+		return r.setTopic(user, arg)
 	default:
-		return p.tg.SendMessage(user.ChatID, msgUnknownCommand)
+		return r.tg.SendMessage(user.ChatID, msgUnknownCommand)
 	}
 }
 
-func (p *Processor) randomWords(user *models.User) (err error) {
+func (r *Responder) randomWords(user *models.User) (err error) {
 	defer func() { err = e.WrapIfErr("can't execute command: random page", err) }()
 
 	var word *models.Words
-	sendMsg := newMessageSender(user.ChatID, p.tg)
+	sendMsg := newMessageSender(user.ChatID, r.tg)
 
-	word, err = p.storage.PickRandomWord(user)
+	word, err = r.storage.PickRandomWord(user)
 	if err != nil && !errors.Is(err, storage.ErrNoSavedPages) {
 		return err
 	}
@@ -97,10 +97,10 @@ func (p *Processor) randomWords(user *models.User) (err error) {
 	return nil
 }
 
-func (p *Processor) phraseOfTheDay(user *models.User, arg string) (err error) {
+func (r *Responder) phraseOfTheDay(user *models.User, arg string) (err error) {
 	defer func() { err = e.WrapIfErr("can't execute command: for CmdPhraseOfTheDay", err) }()
 
-	sendMsg := newMessageSender(user.ChatID, p.tg)
+	sendMsg := newMessageSender(user.ChatID, r.tg)
 	if err = sendMsg("Phrase of the day\nMukavaa päivää - Hava a nice day"); err != nil {
 		return err
 	}
@@ -108,10 +108,10 @@ func (p *Processor) phraseOfTheDay(user *models.User, arg string) (err error) {
 	return nil
 }
 
-func (p *Processor) setLang(user *models.User, arg string) (err error) {
+func (r *Responder) setLang(user *models.User, arg string) (err error) {
 	defer func() { err = e.WrapIfErr("can't execute command: set language", err) }()
 
-	sendMsg := newMessageSender(user.ChatID, p.tg)
+	sendMsg := newMessageSender(user.ChatID, r.tg)
 
 	if arg == "" {
 		err = sendMsg(msgMissingArgument)
@@ -130,7 +130,7 @@ func (p *Processor) setLang(user *models.User, arg string) (err error) {
 		return nil
 	}
 
-	err = p.storage.SetUserLanguage(user)
+	err = r.storage.SetUserLanguage(user)
 	if err != nil {
 		return err
 	}
@@ -143,12 +143,12 @@ func (p *Processor) setLang(user *models.User, arg string) (err error) {
 	return nil
 }
 
-func (p *Processor) sendTopics(user *models.User) (err error) {
+func (r *Responder) sendTopics(user *models.User) (err error) {
 	defer func() { err = e.WrapIfErr("can't execute command: send topics", err) }()
 
-	sendMsg := newMessageSender(user.ChatID, p.tg)
+	sendMsg := newMessageSender(user.ChatID, r.tg)
 
-	topics, err := p.storage.GetTopics()
+	topics, err := r.storage.GetTopics()
 	if err != nil {
 		return err
 	}
@@ -170,12 +170,12 @@ func (p *Processor) sendTopics(user *models.User) (err error) {
 	return nil
 }
 
-func (p *Processor) setTopic(user *models.User, arg string) (err error) {
+func (r *Responder) setTopic(user *models.User, arg string) (err error) {
 	defer func() { err = e.WrapIfErr("can't execute command: set topic", err) }()
 
-	sendMsg := newMessageSender(user.ChatID, p.tg)
+	sendMsg := newMessageSender(user.ChatID, r.tg)
 
-	err = p.storage.SetUserTopic(user, arg)
+	err = r.storage.SetUserTopic(user, arg)
 	if err != nil && errors.Is(err, dialect.ErrUnsupportedTopic) {
 		err = sendMsg(msgUnsupportedTopic)
 		if err != nil {
@@ -196,20 +196,20 @@ func (p *Processor) setTopic(user *models.User, arg string) (err error) {
 	return nil
 }
 
-func (p *Processor) sendHelp(user *models.User) error {
-	return p.tg.SendMessage(user.ChatID, msgHelp)
+func (r *Responder) sendHelp(user *models.User) error {
+	return r.tg.SendMessage(user.ChatID, msgHelp)
 }
 
-func (p *Processor) sendHelpRu(user *models.User) error {
-	return p.tg.SendMessage(user.ChatID, msgHelpRu)
+func (r *Responder) sendHelpRu(user *models.User) error {
+	return r.tg.SendMessage(user.ChatID, msgHelpRu)
 }
 
-func (p *Processor) sendHelpEn(user *models.User) error {
-	return p.tg.SendMessage(user.ChatID, msgHelpEn)
+func (r *Responder) sendHelpEn(user *models.User) error {
+	return r.tg.SendMessage(user.ChatID, msgHelpEn)
 }
 
-func (p *Processor) sendHello(user *models.User) error {
-	return p.tg.SendMessage(user.ChatID, msgHello)
+func (r *Responder) sendHello(user *models.User) error {
+	return r.tg.SendMessage(user.ChatID, msgHello)
 }
 
 func newMessageSender(ChatID int, tg *telegram.Client) func(string) error {

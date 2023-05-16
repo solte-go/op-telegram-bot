@@ -6,19 +6,16 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-
 	"telegram-bot/solte.lab/pkg/api"
 	"telegram-bot/solte.lab/pkg/api/handlers/metrics"
+	tgClient "telegram-bot/solte.lab/pkg/clients/telegram"
 	"telegram-bot/solte.lab/pkg/config"
 	"telegram-bot/solte.lab/pkg/events/telegram"
 	"telegram-bot/solte.lab/pkg/logging"
+	"telegram-bot/solte.lab/pkg/queue"
 	"telegram-bot/solte.lab/pkg/storage/storagewrapper"
 
 	"go.uber.org/zap"
-
-	tgClient "telegram-bot/solte.lab/pkg/clients/telegram"
-
-	eventConsumer "telegram-bot/solte.lab/pkg/consumer/eventconsumer"
 
 	_ "github.com/lib/pq"
 )
@@ -60,20 +57,29 @@ func main() {
 
 	ctx := waitQuitSignal(context.Background())
 
-	s, err := storagewrapper.New(ctx, conf.PostgreSQL)
+	storage, err := storagewrapper.New(ctx, conf.Postgres)
 	if err != nil {
 		logger.Fatal("can't initialize storage", zap.Error(err))
 	}
 
-	server := api.New(logger)
-	go server.Run(ctx, conf.API.WorkerPort, &metrics.Worker{})
-
-	eventProcessor := telegram.New(tg, s, logger)
-
-	c := eventConsumer.New(eventProcessor, eventProcessor, batchSize, logger)
-	if err := c.Start(ctx); err != nil {
-		logger.Warn("bot is shutting down", zap.String("reason", err.Error()))
+	consumer, err := queue.New(conf.KafkaConsumer)
+	if err != nil {
+		logger.Fatal("can't initialize consumer", zap.Error(err))
 	}
+
+	server := api.New(logger)
+	go server.Run(ctx, conf.APIs.Worker.Port, &metrics.Worker{})
+
+	responder := telegram.NewResponder(ctx, tg, storage, consumer, logger)
+
+	responder.Run(ctx)
+
+	//eventProcessor := telegram.New(tg, s, logger)
+
+	//c := eventConsumer.New(eventProcessor, eventProcessor, batchSize, logger)
+	//if err := c.Start(ctx); err != nil {
+	//	logger.Warn("bot is shutting down", zap.String("reason", err.Error()))
+	//}
 }
 
 func waitQuitSignal(ctx context.Context) context.Context {

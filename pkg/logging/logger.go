@@ -9,6 +9,15 @@ import (
 	"telegram-bot/solte.lab/pkg/config"
 )
 
+var loggerInstance *zap.Logger
+
+func GetLogger() *zap.Logger {
+	if loggerInstance != nil {
+		return loggerInstance
+	}
+	return nil
+}
+
 func NewLogger(config *config.Logging) (*zap.Logger, error) {
 	level := zap.NewAtomicLevel()
 	err := level.UnmarshalText([]byte(config.LogLevel))
@@ -39,5 +48,6 @@ func NewLogger(config *config.Logging) (*zap.Logger, error) {
 		zap.AddCaller(), zap.AddStacktrace(zapcore.PanicLevel),
 	)
 
+	loggerInstance = logger
 	return logger, nil
 }

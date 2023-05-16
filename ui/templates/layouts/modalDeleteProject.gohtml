@@ -1,0 +1,134 @@
+{{define "delete_project"}}
+    <div class="modal fade" id="deleteProjectModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-error">
+                    <div id="deleteProjectModalAlerts" class="alert alert-warning alert-dismissible fade show" role="alert" style="display: none">
+                    </div>
+                </div>
+                <div class="modal-header">
+                    <h5 class="modal-title">You about to delete this project</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="deleteProject" action="/authorized/api/v1/deleteProject" method="POST">
+                        <div class="mb-3">
+                            <label for="deleteProjectName" class="form-label">Project to be deleted</label>
+                            <input type="text" class="form-control" id="deleteProjectName" name="project" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label for="deleteProjectConfirmation" class="form-label">Type <strong>Delete</strong> to continue</label>
+                            <input type="text" class="form-control" id="deleteProjectConfirmation">
+                        </div>
+                        <button type="submit" id="deleteOnSubmit" class="btn btn-danger m-1 float-end" disabled="disabled">Delete</button>
+                        <input type="reset" class="btn btn-secondary m-1 float-end"  data-bs-dismiss="modal" value="Close">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        async function getProjectDataForDeletion(projectName) {
+            let Alerts = $('#deleteProjectModalAlerts');
+            let requestData = {
+                project: projectName,
+            };
+            const response = await fetch(
+                '/authorized/api/v1/getProjectDataForUpdate',
+                {
+                    method: 'POST',
+                    credentials: "include",
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(requestData),
+                }
+            );
+            if (response.status === 401) {
+                location.href = '/';
+                return;
+            }
+            if (!response.ok) {
+                while (Alerts.firstChild) {
+                    Alerts.removeChild(Alerts.lastChild);
+                }
+                Alerts.removeClass('alert-warning alert-success');
+                Alerts.addClass('alert alert-warning justify-content-center');
+
+                Alerts.text(response.statusText).css("display", "grid");
+                setTimeout(function () {
+                    Alerts.fadeOut("slow");
+                }, 5000);
+                return;
+            }
+            const data = await response.json();
+
+            $('#deleteProjectName').val(data.Name)
+
+            $('#deleteProjectModal').modal('show');
+        }
+
+        $("#deleteProject").on("submit", async function(event) {
+            event.preventDefault();
+            let Alerts = $('#deleteProjectModalAlerts');
+            let form = $(this);
+            let url = form.attr('action');
+            let requestData = {
+                project: $('#deleteProjectName').val(),
+            };
+            const response = await fetch(url, {
+                method: form.attr('method'),
+                credentials: "include",
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(requestData),
+            });
+
+            if (response.status === 401){
+                location.href = '/';
+                return;
+            }
+
+            if (!response.ok) {
+                while (Alerts.firstChild) {
+                    Alerts.removeChild(Alerts.lastChild);
+                }
+                Alerts.removeClass('alert-warning alert-success');
+                Alerts.addClass('alert alert-warning justify-content-center');
+
+                Alerts.text(response.statusText).css("display", "grid");
+                setTimeout(function () {
+                    Alerts.fadeOut("slow");
+                }, 4000);
+                return;
+            }
+
+            const data = await response.json();
+            while (Alerts.firstChild) {
+                Alerts.removeChild(Alerts.lastChild);
+            }
+
+            Alerts.removeClass('alert-warning');
+            Alerts.addClass('alert alert-success justify-content-center');
+
+            Alerts.text(data).css("display", "grid");
+
+            setTimeout(function () {
+                Alerts.fadeOut("slow");
+                $('#deleteProjectModal').modal('hide');
+                $('#deleteProject').trigger("reset");
+            }, 3000);
+
+            setTimeout(function () {
+                reloadPage()
+            }, 3200);
+        });
+
+        $(document).ready(function() {
+            $('#deleteProjectConfirmation').on('input change', function() {
+                if($(this).val() === 'Delete') {
+                    $('#deleteOnSubmit').prop('disabled', false);
+                } else {
+                    $('#deleteOnSubmit').prop('disabled', true);
+                }
+            });
+        });
+    </script>
+{{end}}

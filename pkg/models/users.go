@@ -14,13 +14,14 @@ const (
 var ErrUnsupportedLanguage = errors.New("unsupported language argument")
 
 type User struct {
-	ID       int
-	Name     string
-	Language string
-	Topic    string
-	ChatID   int
-	Offset   int
-	Sequence *Sequence
+	ID       int       `json:"id"`
+	Cmd      string    `json:"cmd"`
+	Name     string    `json:"name"`
+	Language string    `json:"language"`
+	Topic    string    `json:"topic"`
+	ChatID   int       `json:"chat_id"`
+	Offset   int       `json:"offset"`
+	Sequence *Sequence `json:"sequence"`
 }
 
 func (u *User) SetDefaults() {

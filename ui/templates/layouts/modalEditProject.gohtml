@@ -1,0 +1,227 @@
+{{define "edit_project"}}
+    <div class="modal fade" id="editProjectModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-error">
+                    <div id="editProjectModalAlerts" class="alert alert-warning alert-dismissible fade show" role="alert" style="display: none">
+                    </div>
+                </div>
+                <div class="modal-header">
+                    <h5 class="modal-title">Project edit</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editProject" action="/authorized/api/v1/editProject" method="POST">
+                        <div class="mb-3">
+                            <label for="editProjectName" class="form-label">Project for edit</label>
+                            <input type="text" class="form-control" id="editProjectName" name="project" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editProjectQuery" class="form-label">Please enter JQL project query</label>
+                            <textarea type="text" class="form-control" id="editProjectQuery" rows="3" name="jql"></textarea>
+                            <div id="editProjectQueryHelp"
+                                 class="form-text">
+                                Exp: project = Archops AND issuetype in ("Bare metal Deploy\\Redeploy", "Storage Share Request")
+                            </div>
+                            <button id="editCheckJQLString"
+                                    type="button"
+                                    class="btn btn-primary m-1"
+                                    onclick="getEditJQLVerification()">
+                                Check JQL
+                            </button>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editProjectManager" class="form-label">Please specify project manager</label>
+                            <input type="text" class="form-control" id="editProjectManager" name="manager">
+                        </div>
+                        <h3 class="m-2">SLA</h3>
+                        <div class="row mb-2">
+                            <div class="col-md-4">
+                                <label for="editSlaTimeToReact" class="form-label">SLA for time to react</label>
+                                <input type="number" id="editSlaTimeToReact" class="form-control" min="1" max="100" width="20px" name="time_to_react">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="editSlaTimeToResolve" class="form-label">SLA for time to resolve</label>
+                                <input type="number" id="editSlaTimeToResolve" class="form-control" min="1" max="100" name="time_to_resolve">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="editSlaStuck" class="form-label">SLA stuck tickets</label>
+                                <input type="number" id="editSlaStuck" class="form-control" min="1" max="100" name="stuck_tickets">
+                            </div>
+                        </div>
+                        <button type="submit" id="editJQLIsChecked" class="btn btn-success m-1 float-end" disabled>Edit Project</button>
+                        <input type="reset" class="btn btn-secondary m-1 float-end"  data-bs-dismiss="modal" value="Close">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        async function getProjectDataForUpdate(projectName) {
+            let Alerts = $('#editProjectModalAlert');
+            let requestData = {
+                project: projectName,
+            };
+            const response = await fetch(
+                '/authorized/api/v1/getProjectDataForUpdate',
+                {
+                    method: 'POST',
+                    credentials: "include",
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(requestData),
+                }
+            );
+            if (response.status === 401){
+                location.href = '/';
+                return;
+            }
+            if (!response.ok) {
+                while (Alerts.firstChild) {
+                    Alerts.removeChild(Alerts.lastChild);
+                }
+                Alerts.removeClass('alert-warning alert-success');
+                Alerts.addClass('alert alert-warning justify-content-center');
+
+                Alerts.text(response.statusText).css("display", "grid");
+                setTimeout(function () {
+                    Alerts.fadeOut("slow");
+                }, 5000);
+                console.log(response.body)
+                // SubmitButton.attr('disabled','disabled');
+                return;
+            }
+            const data = await response.json();
+
+            $('#editProjectName').val(data.Name)
+            $('#editProjectQuery').val(data.Query)
+            $('#editProjectManager').val(data.Manager)
+            $('#editSlaTimeToReact').val(data.SLA.TimeToReact)
+            $('#editSlaTimeToResolve').val(data.SLA.TimeToResolve)
+            $('#editSlaStuck').val(data.SLA.IssueStuck)
+
+
+            $('#editProjectModal').modal('show');
+
+        }
+
+        $("#editProject").on("submit", async function(event) {
+            event.preventDefault();
+            let Alerts = $('#editProjectModalAlerts');
+            let SubmitButton = $("#editJQLIsChecked");
+            let form = $(this);
+            let url = form.attr('action');
+            let requestData = {
+                project: $('#editProjectName').val(),
+                jql: $('#editProjectQuery').val(),
+                manager:$('#editProjectManager').val(),
+                time_to_react:$('#editSlaTimeToReact').val(),
+                time_to_resolve:$('#editSlaTimeToResolve').val(),
+                stuck_tickets:$('#editSlaStuck').val(),
+            };
+            const response = await fetch(url, {
+                method: form.attr('method'),
+                credentials: "include",
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(requestData),
+            });
+
+            if (response.status === 401){
+                location.href = '/';
+                return;
+            }
+
+            if (!response.ok) {
+                while (Alerts.firstChild) {
+                    Alerts.removeChild(Alerts.lastChild);
+                }
+                Alerts.removeClass('alert-warning alert-success');
+                Alerts.addClass('alert alert-warning justify-content-center');
+
+                Alerts.text(response.statusText).css("display", "grid");
+                setTimeout(function () {
+                    Alerts.fadeOut("slow");
+                }, 5000);
+
+                SubmitButton.attr('disabled','disabled');
+                return;
+            }
+
+            const data = await response.json();
+
+            while (Alerts.firstChild) {
+                Alerts.removeChild(Alerts.lastChild);
+            }
+
+            Alerts.removeClass('alert-warning');
+            Alerts.addClass('alert alert-success justify-content-center');
+
+            Alerts.text(data).css("display", "grid");
+
+            setTimeout(function () {
+                Alerts.fadeOut("slow");
+                $('#editProjectModal').modal('hide');
+                SubmitButton.attr('disabled','disabled');
+                $('#editProject').trigger("reset");
+            }, 2800);
+
+            setTimeout(function () {
+                reloadPage()
+            }, 3000);
+
+        });
+
+        async function getEditJQLVerification() {
+            let Alerts = $('#editProjectModalAlerts');
+            let SubmitButton = $("#editJQLIsChecked");
+            let requestData = {
+                jql: $('#editProjectQuery').val(),
+            };
+            const response = await fetch(
+                '/authorized/api/v1/verifyJQLString',
+                {
+                    method: 'POST',
+                    credentials: "include",
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(requestData),
+                }
+            );
+            if (response.status === 401){
+                location.href = '/';
+                return;
+            }
+
+            if (!response.ok) {
+                while (Alerts.firstChild) {
+                    Alerts.removeChild(Alerts.lastChild);
+                }
+                Alerts.removeClass('alert-warning alert-success');
+                Alerts.addClass('alert alert-warning justify-content-center');
+                Alerts.append([
+                    $('<span>').text("JQL query is not correct")
+                ]);
+
+                Alerts.text(response.statusText + ": JQL query is not correct").css("display", "grid");
+                setTimeout(function () {
+                    Alerts.fadeOut("slow");
+                }, 3000);
+
+                SubmitButton.attr('disabled','disabled');
+                return;
+            }
+
+            const data = await response.json();
+            while (Alerts.firstChild) {
+                Alerts.removeChild(Alerts.lastChild);
+            }
+
+            Alerts.removeClass('alert-warning');
+            Alerts.addClass('alert alert-success justify-content-center');
+
+            Alerts.text(data.message + " Request return " +data.result.total + " issues").css("display", "grid");
+            SubmitButton.removeAttr("disabled");
+            // setTimeout(function () {
+            //     Alerts.fadeOut("slow");
+            // }, 3000);
+        }
+    </script>
+{{end}}

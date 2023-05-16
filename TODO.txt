@@ -7,3 +7,6 @@ This script is used to do that. It is also used to run the migrations and start 
 
 - deploy gitlab runner: on VM to build container images and upload them to the registry.
 
+- if data ware manualy insert into the database, the sequence need to be reset to the max id of the table.
+'SELECT setval('words_id_seq', max(id))
+FROM   words;'

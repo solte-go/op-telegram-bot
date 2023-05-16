@@ -1,0 +1,20 @@
+{{define "home"}}
+    <div class="container-fluid" style="padding: 0px;">
+        <div class="row align-content-start">
+            <div class="mb-3 mt-3">
+                <button type="button" data-bs-toggle="modal" data-bs-target="#addProjectModal" class="btn btn-success">+</button>
+{{/*                <button type="button" class="btn btn-secondary" onclick="requestProjectsStatus()">Refresh</button>*/}}
+            </div>
+        </div>
+        <div class="container-fluid" id="projects-container" style="padding: 0px">
+        </div>
+    </div>
+{{template "add_project"}}
+{{/*{{template "edit_project"}}*/}}
+{{/*{{template "change_sync_params"}}*/}}
+{{/*{{template "delete_project"}}*/}}
+<script>
+    // requestProjectsNames()
+    // requestProjectsStatus()
+</script>
+{{end}}

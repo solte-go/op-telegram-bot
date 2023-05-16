@@ -1,6 +1,10 @@
-[api]
-    worker_port = 2112
-    ui_port = 8080
+[api.worker]
+    port = 2112
+    static_content_path = "static"
+
+[api.ui]
+    port = 8080
+    static_content_path = "./ui/"
 
 [telegram]
     host = "api.telegram.org"

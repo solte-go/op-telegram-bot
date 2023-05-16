@@ -1,22 +1,23 @@
 package telegram
 
 import (
+	"context"
 	"errors"
+	"fmt"
+	"telegram-bot/solte.lab/pkg/queue"
 
 	"go.uber.org/zap"
 	"telegram-bot/solte.lab/pkg/clients/telegram"
+	e "telegram-bot/solte.lab/pkg/errhandler"
 	"telegram-bot/solte.lab/pkg/events"
 	"telegram-bot/solte.lab/pkg/models"
-	"telegram-bot/solte.lab/pkg/storage"
-
-	e "telegram-bot/solte.lab/pkg/errhandler"
 )
 
 type Processor struct {
-	tg      *telegram.Client
-	offset  int
-	storage storage.Storage
-	logger  *zap.Logger
+	tg       *telegram.Client
+	offset   int
+	producer *queue.Publisher
+	logger   *zap.Logger
 }
 
 type Meta struct {
@@ -29,11 +30,11 @@ var (
 	ErrUnknownMetaType  = errors.New("unknown meta type")
 )
 
-func New(client *telegram.Client, storage storage.Storage, logger *zap.Logger) *Processor {
+func New(client *telegram.Client, kafka *queue.Publisher, logger *zap.Logger) *Processor {
 	return &Processor{
-		tg:      client,
-		storage: storage,
-		logger:  logger,
+		tg:       client,
+		producer: kafka,
+		logger:   logger,
 	}
 }
 
@@ -74,15 +75,24 @@ func (p *Processor) processMessage(event events.Event) error {
 	user := &models.User{
 		Name:   meta.Username,
 		ChatID: meta.ChatID,
+		Cmd:    event.Text,
 		Sequence: &models.Sequence{
 			Words:    nil,
 			NextWord: 0,
 		},
 	}
 
-	if err := p.doCmd(event.Text, user); err != nil {
-		return e.Wrap("can't process message", err)
+	message, err := p.producer.PrepareMessage(user)
+	if err != nil {
+		return e.Wrap("can't prepare message for kafka", err)
 	}
+
+	fmt.Printf("Message: %+v\n", *message)
+
+	p.producer.SendMessage(context.TODO(), message)
+	//if err := p.doCmd(event.Text, user); err != nil {
+	//	return e.Wrap("can't process message", err)
+	//}
 
 	return nil
 }

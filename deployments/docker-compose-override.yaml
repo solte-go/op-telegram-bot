@@ -1,7 +1,7 @@
 version: "3.7"
 services:
   prometheus:
-    container_name: prometheus
+    container_name: dev-prometheus
     ports:
       - "9090:9090"
     expose:
@@ -15,12 +15,13 @@ services:
       - bot-network
 
   postgres:
-    container_name: postgres-dev
+    container_name: dev-postgres
+    image: postgres:15.2
     environment:
       - POSTGRES_PASSWORD=$PSQL_PASSWORD
     volumes:
       - /opt/solte-lab/postgres/data/pgdata:/var/lib/postgresql/data
-      # - ./init-database.sh:/docker-entrypoint-initdb.d/init-database.sh
+#      - ./init-database.sh:/docker-entrypoint-initdb.d/init-database.sh
     ports:
       - "5432:5432"
     networks:

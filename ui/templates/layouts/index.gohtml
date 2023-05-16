@@ -1,0 +1,16 @@
+{{define "index"}}
+    {{template "header"}}
+    <body>
+        <div class="container-fluid">
+          {{if .}}
+                {{template "navbar" .}}
+                {{template "home"}}
+            {{else}}
+                {{template "navbar"}}
+                {{template "login"}}
+            {{end}}
+
+            {{template "footer"}}
+         </div>
+    </body>
+{{end}}
