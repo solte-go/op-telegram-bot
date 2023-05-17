@@ -17,9 +17,8 @@ import (
 type Responder struct {
 	tg       *telegram.Client
 	consumer queue.Consumer
-	//storage  storage.Storage
-	logger *zap.Logger
-	worker *worker.Worker
+	logger   *zap.Logger
+	worker   *worker.Worker
 }
 
 func NewResponder(
@@ -40,7 +39,7 @@ func NewResponder(
 func (r *Responder) Run(ctx context.Context) {
 	ch := make(chan *kafka.Message)
 
-	go r.consumer.PollMessages(ctx, 100, ch)
+	go r.consumer.Run(ctx, ch)
 
 	for {
 		select {
@@ -62,6 +61,8 @@ func (r *Responder) Run(ctx context.Context) {
 					r.logger.Error("can't process user command", zap.Error(err))
 					continue
 				}
+			default:
+				fmt.Println("unknown message: ", string(msg.Value))
 			}
 		}
 	}

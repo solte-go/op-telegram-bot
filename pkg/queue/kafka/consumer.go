@@ -5,23 +5,16 @@ import (
 	"fmt"
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"go.uber.org/zap"
-	"math"
 	"telegram-bot/solte.lab/pkg/config"
 	"time"
 )
-
-type Message struct {
-	Key         []byte
-	Value       []byte
-	Traceparent []byte
-}
 
 type Consumer struct {
 	config     *config.KafkaConsumer
 	client     *kafka.Consumer
 	logger     *zap.Logger
 	partitions []kafka.TopicPartition
-	toCommit   map[int32]kafka.TopicPartition
+	channel    chan *kafka.Message
 }
 
 func New(conf *config.KafkaConsumer) (*Consumer, error) {
@@ -37,9 +30,9 @@ func New(conf *config.KafkaConsumer) (*Consumer, error) {
 			"group.id":                        conf.Group,
 			"auto.offset.reset":               conf.AutoOffsetReset,
 			"enable.auto.commit":              false,
-			"enable.auto.offset.store":        false,
 			"session.timeout.ms":              conf.SessionTimeout,
 			"go.application.rebalance.enable": true,
+			//"enable.auto.offset.store":        false,
 		})
 
 		if err == nil {
@@ -60,219 +53,158 @@ func New(conf *config.KafkaConsumer) (*Consumer, error) {
 	}
 
 	c := &Consumer{
-		config:   conf,
-		client:   consumer,
-		logger:   logger,
-		toCommit: map[int32]kafka.TopicPartition{},
+		config: conf,
+		client: consumer,
+		logger: logger,
 	}
 
-	err = c.client.SubscribeTopics([]string{conf.Topic}, c.rebalanceCB)
-
+	err = c.client.SubscribeTopics([]string{conf.Topic}, c.rebalanceCallback)
 	return c, err
 }
 
-func (c *Consumer) rebalanceCB(kc *kafka.Consumer, ev kafka.Event) error {
-	c.logger.Info("RebalanceCb executed")
-	switch e := ev.(type) {
-	case kafka.Error:
-		c.logger.Error("Rebalance kafka.Error", zap.Error(e))
-		return e
-	case kafka.AssignedPartitions:
-		c.logger.Info("Rebalance", zap.Any("event", e))
-		c.partitions = e.Partitions
-		err := c.CommitOffsets()
-		if err != nil {
-			c.logger.Error("Commit error", zap.Error(err))
-		}
+func (c *Consumer) Run(ctx context.Context, ch chan *kafka.Message) error {
 
-		err = c.client.Assign(e.Partitions)
-		if err != nil {
-			c.logger.Error("Assign() error", zap.Error(err))
-		}
-	case kafka.RevokedPartitions:
-		c.logger.Info("Rebalance", zap.Any("event", e))
-		err := c.CommitOffsets()
-		if err != nil {
-			c.logger.Error("Commit error", zap.Error(err))
-		}
+	c.channel = ch
 
-		err = c.client.Unassign()
-		if err != nil {
-			c.logger.Error("Unassign() error", zap.Error(err))
-		}
-	default:
-		// Ignore other event types
-		c.logger.Debug("Rebalance Ignored", zap.Any("event", e))
-	}
-
-	return nil
-}
-
-func (c *Consumer) CommitOffsets() error {
-	if len(c.toCommit) == 0 {
-		c.logger.Debug("Nothing to commit")
-		return nil
-	}
-
-	offsets := make([]kafka.TopicPartition, 0, len(c.toCommit))
-	for _, tp := range c.toCommit {
-		tp.Offset++
-		offsets = append(offsets, tp)
-	}
-
-	var err error
-	var commited []kafka.TopicPartition
-	for try := 0; try <= c.config.OffsetCommitRetries; try++ {
-		c.logger.Debug("About to commit offsets", zap.Int("try", try))
-		commited, err = c.client.CommitOffsets(offsets)
-		if err == nil {
-			break
-		}
-	}
-
-	if err != nil {
-		c.logger.Error(
-			"Can't commit offsets",
-			zap.Int("retries", c.config.OffsetCommitRetries),
-			zap.Error(err),
-		)
-
-		return err
-	}
-
-	c.toCommit = make(map[int32]kafka.TopicPartition)
-
-	for _, offset := range commited {
-		c.logger.Debug("Offsets committed", zap.String("offset", offset.String()))
-	}
-
-	return nil
-}
-
-func (c *Consumer) readMessage() (*kafka.Message, error) {
-	timeout := c.config.PollTimeout
-
-	var absTimeout time.Time
-	var timeoutMs int
-
-	if timeout > 0 {
-		absTimeout = time.Now().Add(timeout)
-		timeoutMs = (int)(timeout.Seconds() * 1000.0)
-	} else {
-		timeoutMs = (int)(timeout)
-	}
-
-	for {
-		ev := c.client.Poll(timeoutMs)
-
-		switch e := ev.(type) {
-		case *kafka.Message:
-			if e.TopicPartition.Error != nil {
-				return e, e.TopicPartition.Error
-			}
-			return e, nil
-		case kafka.Error:
-			return nil, e
-		case kafka.PartitionEOF:
-			c.logger.Info("PartitionEOF")
-		default:
-			// Ignore other event types
-			if e != nil {
-				c.logger.Debug(
-					fmt.Sprintf("Unexpected message type: %v", e),
-				)
-			}
-		}
-
-		if timeout > 0 {
-			// Calculate remaining time
-			timeoutMs = int(math.Max(0.0, absTimeout.Sub(time.Now()).Seconds()*1000.0))
-		}
-
-		if timeoutMs == 0 && ev == nil {
-			c.logger.Debug("ReadMessage timed out")
-			return nil, nil
-		}
-	}
-}
-
-func (c *Consumer) ReadBatch() []Message {
-	batch := make([]Message, 0, c.config.BatchSize)
-
-	currentBatchSize := 0
-	timer := time.NewTimer(c.config.PollTimeout)
-BatchLoop:
-	for currentBatchSize < c.config.BatchSize {
-		select {
-		case <-timer.C:
-			c.logger.Info("Batch reading timeout")
-			break BatchLoop
-		default:
-			c.logger.Debug("Reading next batch message")
-			m, err := c.readMessage()
-			if m != nil {
-				c.toCommit[m.TopicPartition.Partition] = m.TopicPartition
-				currentBatchSize++
-			} else {
-				c.logger.Debug("No new messages")
-				continue
-			}
-			if err != nil {
-				c.logger.Error("Can't read event", zap.Error(err))
-				continue
-			}
-
-			var traceparent []byte
-			for _, h := range m.Headers {
-				if h.Key == "elasticapmtraceparent" || h.Key == "traceparent" {
-					traceparent = h.Value
-					break
-				}
-			}
-
-			c.logger.Debug("Processed offset " + m.TopicPartition.String())
-			batch = append(batch, Message{Key: m.Key, Value: m.Value, Traceparent: traceparent})
-		}
-	}
-
-	return batch
-}
-
-func (c *Consumer) PollMessages(ctx context.Context, timeoutMs int, messageChan chan *kafka.Message) {
-consume:
-	for {
+	run := true
+	for run == true {
 		select {
 		case <-ctx.Done():
-			c.logger.Info("Context done", zap.String("Reason", ctx.Err().Error()))
-			break consume
-
+			c.logger.Info("Revise context done: Closing consumer")
+			run = false
 		default:
-			ev := c.client.Poll(timeoutMs)
+			ev := c.client.Poll(100)
 			if ev == nil {
 				continue
 			}
 
-			switch e := ev.(type) {
-			case *kafka.Message:
-				messageChan <- e
-
-				_, err := c.client.StoreMessage(e)
-				if err != nil {
-					c.logger.Error(
-						"Error storing offset after message",
-						zap.Error(err),
-						zap.String("TopicPartition", e.TopicPartition.String()),
-					)
-				}
-			case kafka.Error:
-				c.logger.Error("Error", zap.Error(e), zap.String("Code", e.Code().String()))
-				if e.Code() == kafka.ErrAllBrokersDown {
-					ctx.Done()
-					return
-				}
-			default:
-				c.logger.Info("Ignored", zap.Any("Event", e))
+			if err := c.processEvent(ev); err != nil {
+				c.logger.Error("Failed to process event", zap.Error(err))
 			}
 		}
 	}
+
+	c.logger.Info("Closing consumer")
+	err := c.client.Close()
+	if err != nil {
+		c.logger.Error("Failed to close consumer", zap.Error(err))
+		return err
+	}
+
+	return nil
+}
+
+// processEvent processes the message/error received from the kafka Consumer's
+// Poll() method.
+func (c *Consumer) processEvent(ev kafka.Event) error {
+	switch e := ev.(type) {
+
+	case *kafka.Message:
+		c.channel <- e
+
+		if err := c.maybeCommit(e.TopicPartition); err != nil {
+			return err
+		}
+
+	case kafka.Error:
+		// Errors should generally be considered informational, the client
+		// will try to automatically recover.
+		c.logger.Error("Kafka error", zap.Error(e))
+
+	default:
+		fmt.Printf("Ignored %v\n", e)
+	}
+
+	return nil
+}
+
+// maybeCommit is called for each message we receive from a Kafka topic.
+// This method can be used to apply some arbitary logic/processing to the
+// offsets, write the offsets into some external storage, and finally, to
+// decide when we want to commit already-stored offsets into Kafka.
+func (c *Consumer) maybeCommit(topicPartition kafka.TopicPartition) error {
+	//additional logic to commit offset should be here if needed
+	//if topicPartition.Offset%10 != 0 {
+	//	return nil
+	//}
+
+	commitedOffsets, err := c.client.Commit()
+
+	// ErrNoOffset occurs when there are no stored offsets to commit. This
+	// can happen if we haven't stored anything since the last commit.
+	// While this will never happen for this example since we call this method
+	// per-message, and thus, always have something to commit, the error
+	// handling is illustrative of how to handle it in cases we call Commit()
+	// in another way, for example, every N seconds.
+	if err != nil && err.(kafka.Error).Code() != kafka.ErrNoOffset {
+		return err
+	}
+
+	c.logger.Debug("Committing offsets", zap.Any("offsets", commitedOffsets))
+	return nil
+}
+
+// rebalanceCallback is called on each group rebalance to assign additional
+// partitions, or remove existing partitions, from the consumer's current
+// assignment.
+//
+// A rebalance occurs when a consumer joins or leaves a consumer group, if it
+// changes the topic(s) it's subscribed to, or if there's a change in one of
+// the topics it's subscribed to, for example, the total number of partitions
+// increases.
+//
+// The application may use this optional callback to inspect the assignment,
+// alter the initial start offset (the .Offset field of each assigned partition),
+// and read/write offsets to commit to an alternative store outside of Kafka.
+func (c *Consumer) rebalanceCallback(kc *kafka.Consumer, event kafka.Event) error {
+	switch ev := event.(type) {
+	case kafka.AssignedPartitions:
+		fmt.Printf("%% %s rebalance: %d new partition(s) assigned: %v\n",
+			c.client.GetRebalanceProtocol(), len(ev.Partitions), ev.Partitions)
+
+		// Assign the partitions to the consumer and setup offsets here if needed.
+
+		err := c.client.Assign(ev.Partitions)
+		if err != nil {
+			return err
+		}
+
+	case kafka.RevokedPartitions:
+		fmt.Printf("%% %s rebalance: %d partition(s) revoked: %v\n",
+			c.client.GetRebalanceProtocol(), len(ev.Partitions), ev.Partitions)
+
+		// Usually, the rebalance callback for `RevokedPartitions` is called
+		// just before the partitions are revoked. We can be certain that a
+		// partition being revoked is not yet owned by any other consumer.
+		// This way, logic like storing any pending offsets or committing
+		// offsets can be handled.
+		// However, there can be cases where the assignment is lost
+		// involuntarily. In this case, the partition might already be owned
+		// by another consumer, and operations including committing
+		// offsets may not work.
+		if c.client.AssignmentLost() {
+			// Our consumer has been kicked out of the group and the
+			// entire assignment is thus lost.
+			c.logger.Error("Assignment lost involuntarily, commit may fail")
+		}
+
+		// Since enable.auto.commit is unset, we need to commit offsets manually
+		// before the partition is revoked.
+		committedOffsets, err := c.client.Commit()
+
+		if err != nil && err.(kafka.Error).Code() != kafka.ErrNoOffset {
+			c.logger.Error("Failed to commit offsets", zap.Error(err))
+			return err
+		}
+
+		c.logger.Debug("Committing offsets", zap.Any("offsets", committedOffsets))
+
+		// Similar to Assign, client automatically calls Unassign() unless the
+		// callback has already called that method. Here, we don't call it.
+
+	default:
+		c.logger.Error("Unexpected event type", zap.Any("event", event))
+	}
+
+	return nil
 }

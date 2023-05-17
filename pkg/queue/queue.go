@@ -6,7 +6,7 @@ import (
 )
 
 type Consumer interface {
-	PollMessages(ctx context.Context, timeoutMs int, messageChan chan *kafka.Message)
+	Run(ctx context.Context, ch chan *kafka.Message) error
 }
 
 type Producer interface {
