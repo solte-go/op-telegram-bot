@@ -13,7 +13,8 @@ import (
 	"telegram-bot/solte.lab/pkg/api/handlers/authorized"
 	"telegram-bot/solte.lab/pkg/config"
 	"telegram-bot/solte.lab/pkg/logging"
-	"telegram-bot/solte.lab/pkg/storage/storagewrapper/postgresql"
+	"telegram-bot/solte.lab/pkg/storage/emsql"
+	"telegram-bot/solte.lab/pkg/storage/postgresql"
 )
 
 var env string
@@ -43,13 +44,17 @@ func main() {
 
 	ctx := waitQuitSignal(context.Background())
 
-	_, err = postgresql.New(conf.Postgres)
+	db, err := postgresql.New(conf.Postgres)
 	if err != nil {
 		logger.Fatal("failed to init storage", zap.Error(err))
 	}
 
 	server := api.New(logger)
-	server.Run(ctx, conf.APIs.UI.Port, admin.New(conf.Postgres.OPDB.Alias), authorized.New(conf.Postgres.OPDB.Alias, conf.APIs.UI.StaticContentPath))
+	server.Run(
+		ctx, conf.APIs.UI.Port,
+		admin.New(emsql.New(db)),
+		authorized.New(emsql.New(db), conf.APIs.UI.StaticContentPath),
+	)
 }
 
 func waitQuitSignal(ctx context.Context) context.Context {

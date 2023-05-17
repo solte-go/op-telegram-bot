@@ -9,6 +9,7 @@ import (
 	"strings"
 	"telegram-bot/solte.lab/pkg/api/tools"
 	"telegram-bot/solte.lab/pkg/models"
+	"telegram-bot/solte.lab/pkg/storage/emsql"
 )
 
 type Handlers struct {
@@ -16,9 +17,9 @@ type Handlers struct {
 	view  *View
 }
 
-func New(alias, fileServerPath string) *Handlers {
+func New(db emsql.OPContract, fileServerPath string) *Handlers {
 	view := NewView(fileServerPath, "index", "home.gohtml", "login.gohtml")
-	t := tools.New(alias)
+	t := tools.New(db)
 	return &Handlers{
 		tools: t,
 		view:  view,

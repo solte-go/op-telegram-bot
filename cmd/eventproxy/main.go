@@ -12,7 +12,7 @@ import (
 	eventConsumer "telegram-bot/solte.lab/pkg/consumer/eventconsumer"
 	"telegram-bot/solte.lab/pkg/events/telegram"
 	"telegram-bot/solte.lab/pkg/logging"
-	"telegram-bot/solte.lab/pkg/queue"
+	"telegram-bot/solte.lab/pkg/queue/kafka"
 )
 
 var env string
@@ -52,7 +52,7 @@ func main() {
 
 	ctx := waitQuitSignal(context.Background())
 
-	k, err := queue.NewKafkaPublisher(ctx, conf.KafkaProducer)
+	k, err := kafka.NewKafkaPublisher(ctx, conf.KafkaProducer)
 	if err != nil {
 		logger.Fatal("Kafka publisher error", zap.Error(err))
 	}

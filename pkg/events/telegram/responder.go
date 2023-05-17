@@ -9,22 +9,30 @@ import (
 	"telegram-bot/solte.lab/pkg/clients/telegram"
 	"telegram-bot/solte.lab/pkg/models"
 	"telegram-bot/solte.lab/pkg/queue"
-	"telegram-bot/solte.lab/pkg/storage"
-	"telegram-bot/solte.lab/pkg/storage/storagewrapper"
+	v1 "telegram-bot/solte.lab/pkg/queue/kafka"
+	"telegram-bot/solte.lab/pkg/storage/emsql"
+	"telegram-bot/solte.lab/pkg/worker"
 )
 
 type Responder struct {
 	tg       *telegram.Client
-	consumer *queue.Consumer
-	storage  storage.Storage
-	logger   *zap.Logger
+	consumer queue.Consumer
+	//storage  storage.Storage
+	logger *zap.Logger
+	worker *worker.Worker
 }
 
-func NewResponder(ctx context.Context, client *telegram.Client, s *storagewrapper.StorageCache, kafka *queue.Consumer, logger *zap.Logger) *Responder {
+func NewResponder(
+	ctx context.Context,
+	client *telegram.Client,
+	storage emsql.OPContract,
+	kafka *v1.Consumer,
+	logger *zap.Logger,
+) *Responder {
 	return &Responder{
 		tg:       client,
 		consumer: kafka,
-		storage:  s,
+		worker:   worker.New(ctx, storage),
 		logger:   logger,
 	}
 }
@@ -41,9 +49,9 @@ func (r *Responder) Run(ctx context.Context) {
 			return
 		case msg := <-ch:
 			switch string(msg.Key) {
-			case queue.PlantMessage:
+			case v1.PlantMessage:
 				fmt.Println("plant message: ", string(msg.Value))
-			case queue.UserMessage:
+			case v1.UserMessage:
 				user, err := r.Decode(msg.Value)
 				if err != nil {
 					r.logger.Error("can't decode user message", zap.Error(err))
@@ -65,6 +73,5 @@ func (r *Responder) Decode(data []byte) (models.User, error) {
 	if err != nil {
 		return models.User{}, err
 	}
-	fmt.Println("user: ", user.Cmd)
 	return user, nil
 }

@@ -1,4 +1,4 @@
-package queue
+package kafka
 
 import (
 	"context"
@@ -79,6 +79,7 @@ func NewKafkaPublisher(ctx context.Context, conf *config.KafkaProducer) (*Publis
 				}
 				connectionPool[conf.ConnectionName] = p
 				go p.errorHandling(ctx)
+				p.logger.Info("Kafka publisher connected", zap.String("connection_name", conf.ConnectionName))
 				return p, err
 			}
 		}

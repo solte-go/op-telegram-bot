@@ -9,15 +9,15 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type storageTests interface {
+type dbTestContract interface {
+	InsertUser(user *models.User) (err error)
 	Close() error
 	DropTables() error
-	InsertUser(user *models.User) (err error)
 }
 
 type querySuiteTests struct {
 	suite.Suite
-	storage storageTests
+	storage dbTestContract
 }
 
 func (s *querySuiteTests) SetupSuite() {

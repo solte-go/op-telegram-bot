@@ -3,44 +3,44 @@ package postgresql
 import (
 	"database/sql"
 	"fmt"
+	"telegram-bot/solte.lab/pkg/storage/postgresql/internal"
 
 	"telegram-bot/solte.lab/pkg/config"
-	"telegram-bot/solte.lab/pkg/storage/storagewrapper/postgresql/internal"
 )
 
-var storagePool map[string]*Storage
+//var storagePool map[string]*Storage
+//
+//func GetStorage(alias string) (*Storage, error) {
+//	if storagePool == nil {
+//		return nil, fmt.Errorf("storage pool is empty")
+//	}
+//	storage, ok := storagePool[alias]
+//	if ok {
+//		return storage, nil
+//	}
+//	return nil, fmt.Errorf("storage with alias %s not found", alias)
+//}
 
-func GetStorage(alias string) (*Storage, error) {
-	if storagePool == nil {
-		return nil, fmt.Errorf("storage pool is empty")
-	}
-	storage, ok := storagePool[alias]
-	if ok {
-		return storage, nil
-	}
-	return nil, fmt.Errorf("storage with alias %s not found", alias)
-}
-
-type Storage struct {
+type PostgresStorage struct {
 	db *sql.DB
 }
 
-func New(conf *config.Postgres) (*Storage, error) {
+func New(conf *config.Postgres) (*PostgresStorage, error) {
 	db, err := newDB(conf.OPDB)
 	if err != nil {
 		return nil, err
 	}
 
-	storage := &Storage{db: db}
+	storage := &PostgresStorage{db: db}
 
 	err = storage.init(conf.OPDB.Alias)
 	if err != nil {
 		return nil, fmt.Errorf("can't initialize storage: %w", err)
 	}
 
-	st := make(map[string]*Storage)
-	storagePool = st
-	storagePool[conf.OPDB.Alias] = storage
+	//st := make(map[string]*Storage)
+	//storagePool = st
+	//storagePool[conf.OPDB.Alias] = storage
 
 	return storage, nil
 }
@@ -61,7 +61,7 @@ func newDB(conf *config.PostgresSQLConfig) (*sql.DB, error) {
 	return db, err
 }
 
-func (s *Storage) Close() error {
+func (s *PostgresStorage) Close() error {
 	err := s.db.Close()
 	if err != nil {
 		return err
@@ -69,7 +69,7 @@ func (s *Storage) Close() error {
 	return nil
 }
 
-func (s *Storage) DropTables() error {
+func (s *PostgresStorage) DropTables() error {
 	q := `DROP TABLE IF EXISTS users, words, links CASCADE;`
 
 	_, err := s.db.Exec(q)
@@ -80,7 +80,7 @@ func (s *Storage) DropTables() error {
 	return nil
 }
 
-func (s *Storage) init(alias string) error {
+func (s *PostgresStorage) init(alias string) error {
 	q := internal.CreateTables(alias)
 	_, err := s.db.Exec(q)
 	if err != nil {

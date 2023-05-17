@@ -5,7 +5,7 @@ import (
 	"telegram-bot/solte.lab/pkg/models"
 )
 
-func (s *Storage) CreateUser(user *models.Admin) error {
+func (s *PostgresStorage) CreateUser(user *models.Admin) error {
 	if err := s.db.QueryRow(
 		"INSERT INTO admins (user_name, email, hashed_password, hashed_token) VALUES ($1, $2, $3, $4) RETURNING id",
 		user.Name,
@@ -18,7 +18,7 @@ func (s *Storage) CreateUser(user *models.Admin) error {
 	return nil
 }
 
-func (s *Storage) FindByEmail(email string) (*models.Admin, error) {
+func (s *PostgresStorage) FindByEmail(email string) (*models.Admin, error) {
 
 	query := `SELECT id, user_name, email, hashed_password, hashed_token FROM admins WHERE email = $1`
 
@@ -38,7 +38,7 @@ func (s *Storage) FindByEmail(email string) (*models.Admin, error) {
 //TODO move to server
 
 // SessionSave Perform generation of cookie for user
-func (s *Storage) SessionSave(user *models.Admin) error {
+func (s *PostgresStorage) SessionSave(user *models.Admin) error {
 	err := s.UpdateUserData(user)
 	if err != nil {
 		return err
@@ -46,7 +46,7 @@ func (s *Storage) SessionSave(user *models.Admin) error {
 	return nil
 }
 
-func (s *Storage) UpdateUserData(user *models.Admin) error {
+func (s *PostgresStorage) UpdateUserData(user *models.Admin) error {
 	if err := s.db.QueryRow(
 		"UPDATE admins SET (email, hashed_password, hashed_token) = ($1, $2, $3) WHERE email = $4 RETURNING id",
 		user.Email,
@@ -59,7 +59,7 @@ func (s *Storage) UpdateUserData(user *models.Admin) error {
 	return nil
 }
 
-func (s *Storage) FindBySessionToken(HashedToken string) (*models.Admin, error) {
+func (s *PostgresStorage) FindBySessionToken(HashedToken string) (*models.Admin, error) {
 	user := &models.Admin{}
 
 	query := `SELECT id, user_name, email, hashed_password, hashed_token FROM admins WHERE hashed_token = $1`
@@ -79,7 +79,7 @@ func (s *Storage) FindBySessionToken(HashedToken string) (*models.Admin, error) 
 	return user, nil
 }
 
-func (s *Storage) AddNewWordsToDataBase(words []models.Words) (err error) {
+func (s *PostgresStorage) AddNewWordsToDataBase(words []models.Words) (err error) {
 
 	query := "INSERT INTO words (suomi, english, russian, letter, topic) VALUES ($1, $2, $3, $4, $5) RETURNING id"
 

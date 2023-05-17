@@ -14,7 +14,7 @@ ARG GOOS=linux
 ARG VERSION
 
 RUN  --mount=type=cache,target=/root/.cache \
-    cd cmd/worker && go build -tags musl -o ../bot -ldflags "-X main.version=$VERSION" \
+    cd cmd/responedr && go build -tags musl -o ../bot -ldflags "-X main.version=$VERSION" \
     cd ../ui && go build -tags musl -o ../op-bot-api -ldflags "-X main.version=$VERSION" ;
 
 #OP-BOT-WORKER

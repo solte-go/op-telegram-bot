@@ -5,13 +5,20 @@ import (
 )
 
 type Storage interface {
-	GetTopics() (topics []string, err error)
-	PickRandomWord(user *models.User) (word *models.Words, err error)
-	SetUserLanguage(user *models.User) (err error)
-	SetUserTopic(user *models.User, topic string) (err error)
-}
+	GetUser(user *models.User) (err error)
+	InsertUser(user *models.User) (err error)
+	UserExist(user *models.User) (bool, error)
+	UpdateUserLang(user *models.User) error
+	UpdateUserTopic(user *models.User) error
+	UpdateUserOffset(user *models.User) error
+	GetWords(offset int) (words []*models.Words, newOffset int, err error)
+	GetWordsFromTopic(topicTitle string, offset int) (words []*models.Words, newOffset int, err error)
+	GetAlphabet() ([]string, error)
+	GetTopics() ([]string, error)
+	GetAllUsers() (users []models.User, err error)
+	//}
 
-type Administrators interface {
+	//type AdminsContract interface {
 	CreateUser(user *models.Admin) error
 	FindByEmail(email string) (*models.Admin, error)
 	SessionSave(user *models.Admin) error
@@ -19,3 +26,20 @@ type Administrators interface {
 	FindBySessionToken(HashedToken string) (*models.Admin, error)
 	AddNewWordsToDataBase(words []models.Words) error
 }
+
+//type UserContract interface {
+//	GetUser(user *models.User) (err error)
+//	InsertUser(user *models.User) (err error)
+//	UserExist(user *models.User) (bool, error)
+//	UpdateUserLang(user *models.User) error
+//	UpdateUserTopic(user *models.User) error
+//	UpdateUserOffset(user *models.User) error
+//	GetAllUsers() (users []models.User, err error)
+//}
+
+//type DialectContract interface {
+//	GetWords(offset int) (words []*models.Words, newOffset int, err error)
+//	GetWordsFromTopic(topicTitle string, offset int) (words []*models.Words, newOffset int, err error)
+//	GetAlphabet() ([]string, error)
+//	GetTopics() ([]string, error)
+//}

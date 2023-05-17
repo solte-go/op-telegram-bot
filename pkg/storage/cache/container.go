@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"sync"
+	"telegram-bot/solte.lab/pkg/storage/emsql"
 	"time"
 
 	"go.uber.org/zap"
 	"telegram-bot/solte.lab/pkg/models"
-	"telegram-bot/solte.lab/pkg/storage/storagewrapper/postgresql"
 )
 
 type dbSync interface {
@@ -30,10 +30,10 @@ type Container struct {
 var ErrorNoUserForUpdate = errors.New("no user for update")
 var ErrorUserEmpty = errors.New("user should not be is empty")
 
-func New(ctx context.Context, st *postgresql.Storage) *Container {
+func New(ctx context.Context, st emsql.OPContract) *Container {
 	c := &Container{
 		userCache: make(map[string]*userCache),
-		sync:      st,
+		sync:      st.User(),
 		logger:    zap.L().Named("cache"),
 	}
 

@@ -3,21 +3,20 @@ package telegram
 import (
 	"context"
 	"errors"
-	"fmt"
-	"telegram-bot/solte.lab/pkg/queue"
-
 	"go.uber.org/zap"
 	"telegram-bot/solte.lab/pkg/clients/telegram"
 	e "telegram-bot/solte.lab/pkg/errhandler"
 	"telegram-bot/solte.lab/pkg/events"
 	"telegram-bot/solte.lab/pkg/models"
+	"telegram-bot/solte.lab/pkg/queue"
+	"telegram-bot/solte.lab/pkg/queue/kafka"
 )
 
 type Processor struct {
 	tg       *telegram.Client
-	offset   int
-	producer *queue.Publisher
+	producer queue.Producer
 	logger   *zap.Logger
+	offset   int
 }
 
 type Meta struct {
@@ -30,7 +29,7 @@ var (
 	ErrUnknownMetaType  = errors.New("unknown meta type")
 )
 
-func New(client *telegram.Client, kafka *queue.Publisher, logger *zap.Logger) *Processor {
+func New(client *telegram.Client, kafka *kafka.Publisher, logger *zap.Logger) *Processor {
 	return &Processor{
 		tg:       client,
 		producer: kafka,
@@ -87,12 +86,7 @@ func (p *Processor) processMessage(event events.Event) error {
 		return e.Wrap("can't prepare message for kafka", err)
 	}
 
-	fmt.Printf("Message: %+v\n", *message)
-
 	p.producer.SendMessage(context.TODO(), message)
-	//if err := p.doCmd(event.Text, user); err != nil {
-	//	return e.Wrap("can't process message", err)
-	//}
 
 	return nil
 }

@@ -6,7 +6,7 @@ import (
 	"telegram-bot/solte.lab/pkg/api/middleware"
 	"telegram-bot/solte.lab/pkg/logging"
 	"telegram-bot/solte.lab/pkg/services"
-	"telegram-bot/solte.lab/pkg/storage/storagewrapper/postgresql"
+	"telegram-bot/solte.lab/pkg/storage/emsql"
 )
 
 type Responder interface {
@@ -21,9 +21,8 @@ type Tools struct {
 	Storage     *services.Services
 }
 
-func New(alias string) *Tools {
-	st, _ := postgresql.GetStorage(alias)
-	service := services.New(st)
+func New(db emsql.OPContract) *Tools {
+	service := services.New(db.Admin())
 	rs := NewResponder()
 	return &Tools{
 		Logger:      logging.GetLogger(),

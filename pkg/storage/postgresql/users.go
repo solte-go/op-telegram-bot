@@ -8,7 +8,7 @@ import (
 	e "telegram-bot/solte.lab/pkg/errhandler"
 )
 
-func (s *Storage) GetAllUsers() (users []models.User, err error) {
+func (s *PostgresStorage) GetAllUsers() (users []models.User, err error) {
 	defer func() { err = e.WrapIfErr("can't get users from database", err) }()
 
 	query := `SELECT user_name, topic, user_language, seq_offset FROM users`
@@ -30,7 +30,7 @@ func (s *Storage) GetAllUsers() (users []models.User, err error) {
 	return users, nil
 }
 
-func (s *Storage) GetUser(user *models.User) (err error) {
+func (s *PostgresStorage) GetUser(user *models.User) (err error) {
 	defer func() { err = e.WrapIfErr("can't get user from database", err) }()
 
 	query := `SELECT topic, user_language
@@ -53,7 +53,7 @@ func (s *Storage) GetUser(user *models.User) (err error) {
 	return nil
 }
 
-func (s *Storage) InsertUser(user *models.User) (err error) {
+func (s *PostgresStorage) InsertUser(user *models.User) (err error) {
 	defer func() { err = e.WrapIfErr("can't insert user to database", err) }()
 
 	query := `INSERT INTO users (user_name, topic, user_language) values ($1, $2, $3) RETURNING id;`
@@ -68,7 +68,7 @@ func (s *Storage) InsertUser(user *models.User) (err error) {
 	return nil
 }
 
-func (s *Storage) UpdateUserLang(user *models.User) error {
+func (s *PostgresStorage) UpdateUserLang(user *models.User) error {
 	query := `UPDATE users SET user_language = $1 WHERE user_name = $2;`
 
 	_, err := s.db.Exec(query, user.Language, user.Name)
@@ -79,7 +79,7 @@ func (s *Storage) UpdateUserLang(user *models.User) error {
 	return nil
 }
 
-func (s *Storage) UpdateUserOffset(user *models.User) error {
+func (s *PostgresStorage) UpdateUserOffset(user *models.User) error {
 	query := `UPDATE users SET seq_offset = $1 WHERE user_name = $2;`
 
 	_, err := s.db.Exec(query, user.Offset, user.Name)
@@ -90,7 +90,7 @@ func (s *Storage) UpdateUserOffset(user *models.User) error {
 	return nil
 }
 
-func (s *Storage) UpdateUserTopic(user *models.User) error {
+func (s *PostgresStorage) UpdateUserTopic(user *models.User) error {
 	query := `UPDATE users SET topic = $1 WHERE user_name = $2;`
 
 	_, err := s.db.Exec(query, user.Topic, user.Name)
@@ -101,7 +101,7 @@ func (s *Storage) UpdateUserTopic(user *models.User) error {
 	return nil
 }
 
-func (s *Storage) UserExist(user *models.User) (bool, error) {
+func (s *PostgresStorage) UserExist(user *models.User) (bool, error) {
 	var count int
 
 	query := `SELECT COUNT(*) 
@@ -114,7 +114,7 @@ func (s *Storage) UserExist(user *models.User) (bool, error) {
 	return count > 0, nil
 }
 
-func (s *Storage) insertNewUserReturnID(username string) (int, error) {
+func (s *PostgresStorage) insertNewUserReturnID(username string) (int, error) {
 	var userID int
 	tx, err := s.db.Begin()
 	if err != nil {

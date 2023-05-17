@@ -63,7 +63,7 @@ func (r *Responder) randomWords(user *models.User) (err error) {
 	var word *models.Words
 	sendMsg := newMessageSender(user.ChatID, r.tg)
 
-	word, err = r.storage.PickRandomWord(user)
+	word, err = r.worker.PickRandomWord(user)
 	if err != nil && !errors.Is(err, storage.ErrNoSavedPages) {
 		return err
 	}
@@ -130,7 +130,7 @@ func (r *Responder) setLang(user *models.User, arg string) (err error) {
 		return nil
 	}
 
-	err = r.storage.SetUserLanguage(user)
+	err = r.worker.SetUserLanguage(user)
 	if err != nil {
 		return err
 	}
@@ -148,7 +148,7 @@ func (r *Responder) sendTopics(user *models.User) (err error) {
 
 	sendMsg := newMessageSender(user.ChatID, r.tg)
 
-	topics, err := r.storage.GetTopics()
+	topics, err := r.worker.GetTopics()
 	if err != nil {
 		return err
 	}
@@ -175,7 +175,7 @@ func (r *Responder) setTopic(user *models.User, arg string) (err error) {
 
 	sendMsg := newMessageSender(user.ChatID, r.tg)
 
-	err = r.storage.SetUserTopic(user, arg)
+	err = r.worker.SetUserTopic(user, arg)
 	if err != nil && errors.Is(err, dialect.ErrUnsupportedTopic) {
 		err = sendMsg(msgUnsupportedTopic)
 		if err != nil {

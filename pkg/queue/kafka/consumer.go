@@ -1,6 +1,7 @@
-package queue
+package kafka
 
 import (
+	"context"
 	"fmt"
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"go.uber.org/zap"
@@ -235,4 +236,43 @@ BatchLoop:
 	}
 
 	return batch
+}
+
+func (c *Consumer) PollMessages(ctx context.Context, timeoutMs int, messageChan chan *kafka.Message) {
+consume:
+	for {
+		select {
+		case <-ctx.Done():
+			c.logger.Info("Context done", zap.String("Reason", ctx.Err().Error()))
+			break consume
+
+		default:
+			ev := c.client.Poll(timeoutMs)
+			if ev == nil {
+				continue
+			}
+
+			switch e := ev.(type) {
+			case *kafka.Message:
+				messageChan <- e
+
+				_, err := c.client.StoreMessage(e)
+				if err != nil {
+					c.logger.Error(
+						"Error storing offset after message",
+						zap.Error(err),
+						zap.String("TopicPartition", e.TopicPartition.String()),
+					)
+				}
+			case kafka.Error:
+				c.logger.Error("Error", zap.Error(e), zap.String("Code", e.Code().String()))
+				if e.Code() == kafka.ErrAllBrokersDown {
+					ctx.Done()
+					return
+				}
+			default:
+				c.logger.Info("Ignored", zap.Any("Event", e))
+			}
+		}
+	}
 }

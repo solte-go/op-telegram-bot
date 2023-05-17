@@ -6,7 +6,7 @@ func NewTestConfig() *Config {
 		Logging:     &Logging{LogLevel: "debug"},
 		Postgres: &Postgres{
 			OPDB: &PostgresSQLConfig{
-				Alias:    "test",
+				Alias:    "opdb",
 				Host:     "localhost",
 				Port:     5432,
 				Username: "postgres",

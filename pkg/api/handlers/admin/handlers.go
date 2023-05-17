@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"telegram-bot/solte.lab/pkg/api/tools"
 	"telegram-bot/solte.lab/pkg/models"
+	"telegram-bot/solte.lab/pkg/storage/emsql"
 	"time"
 )
 
@@ -15,9 +16,9 @@ type Admin struct {
 	tools *tools.Tools
 }
 
-func New(alias string) *Admin {
+func New(db emsql.OPContract) *Admin {
 	return &Admin{
-		tools: tools.New(alias),
+		tools: tools.New(db),
 	}
 }
 

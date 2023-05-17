@@ -9,7 +9,7 @@ import (
 
 const offsetInc = 20
 
-func (s *Storage) GetWords(offset int) (words []*models.Words, newOffset int, err error) {
+func (s *PostgresStorage) GetWords(offset int) (words []*models.Words, newOffset int, err error) {
 	defer func() { err = e.WrapIfErr("can't retrieve words from database", err) }()
 
 	wordIndex, err := s.getOffset()
@@ -48,7 +48,7 @@ func (s *Storage) GetWords(offset int) (words []*models.Words, newOffset int, er
 	return words, newOffset, err
 }
 
-func (s *Storage) GetWordsFromTopic(topicTitle string, offset int) (words []*models.Words, newOffset int, err error) {
+func (s *PostgresStorage) GetWordsFromTopic(topicTitle string, offset int) (words []*models.Words, newOffset int, err error) {
 	defer func() { err = e.WrapIfErr("can't retrieve words with specific topic from database", err) }()
 
 	wordIndex, err := s.getOffsetWithTopic(topicTitle)
@@ -87,7 +87,7 @@ func (s *Storage) GetWordsFromTopic(topicTitle string, offset int) (words []*mod
 	return words, newOffset, err
 }
 
-func (s *Storage) GetTopics() ([]string, error) {
+func (s *PostgresStorage) GetTopics() ([]string, error) {
 	var topics []string
 	query := `SELECT DISTINCT topic FROM words`
 
@@ -113,7 +113,7 @@ func (s *Storage) GetTopics() ([]string, error) {
 	return topics, nil
 }
 
-func (s *Storage) Remove(p *models.Page) error {
+func (s *PostgresStorage) Remove(p *models.Page) error {
 	deleteStmt := `delete from links where id=$1`
 
 	_, err := s.db.Exec(deleteStmt, p.URLId)
@@ -123,7 +123,7 @@ func (s *Storage) Remove(p *models.Page) error {
 	return nil
 }
 
-func (s *Storage) GetAlphabet() ([]string, error) {
+func (s *PostgresStorage) GetAlphabet() ([]string, error) {
 	var alphabet []string
 	query := `SELECT DISTINCT letter FROM words`
 
@@ -145,7 +145,7 @@ func (s *Storage) GetAlphabet() ([]string, error) {
 	return alphabet, nil
 }
 
-func (s *Storage) getUserID(userName string) (id int, err error) {
+func (s *PostgresStorage) getUserID(userName string) (id int, err error) {
 	query := `SELECT id FROM users WHERE user_name = $1`
 
 	err = s.db.QueryRow(query, userName).Scan(&id)
@@ -155,7 +155,7 @@ func (s *Storage) getUserID(userName string) (id int, err error) {
 	return id, nil
 }
 
-func (s *Storage) getOffset() (int, error) {
+func (s *PostgresStorage) getOffset() (int, error) {
 	var count int
 
 	q := `SELECT COUNT(*) FROM words;`
@@ -171,7 +171,7 @@ func (s *Storage) getOffset() (int, error) {
 	return count, nil
 }
 
-func (s *Storage) getOffsetWithTopic(topic string) (int, error) {
+func (s *PostgresStorage) getOffsetWithTopic(topic string) (int, error) {
 	var count int
 
 	q := `SELECT COUNT(*) FROM words WHERE topic=$1;`
@@ -187,7 +187,7 @@ func (s *Storage) getOffsetWithTopic(topic string) (int, error) {
 	return count, nil
 }
 
-func (s *Storage) checkLink(p *models.Page) (bool, error) {
+func (s *PostgresStorage) checkLink(p *models.Page) (bool, error) {
 	var count int
 
 	q := `SELECT COUNT(*) FROM links WHERE user_id = $1 AND link = $2`

@@ -2,14 +2,14 @@ package services
 
 import (
 	"telegram-bot/solte.lab/pkg/services/authentication"
-	"telegram-bot/solte.lab/pkg/storage"
+	"telegram-bot/solte.lab/pkg/storage/emsql"
 )
 
 type Services struct {
 	Auth authentication.Service
 }
 
-func New(st storage.Administrators) *Services {
+func New(st emsql.AdminsContract) *Services {
 	return &Services{
 		Auth: authentication.New(st),
 	}
