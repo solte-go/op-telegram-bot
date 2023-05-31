@@ -124,7 +124,8 @@ func (c *Consumer) processEvent(ev kafka.Event) error {
 // decide when we want to commit already-stored offsets into Kafka.
 func (c *Consumer) maybeCommit(topicPartition kafka.TopicPartition) error {
 	//additional logic to commit offset should be here if needed
-	//if topicPartition.Offset%10 != 0 {
+
+	//if topicPartition.Offset % 10 != 0 {
 	//	return nil
 	//}
 

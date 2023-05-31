@@ -3,13 +3,14 @@ package admin
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/go-chi/chi/v5"
-	"go.uber.org/zap"
 	"net/http"
 	"telegram-bot/solte.lab/pkg/api/tools"
 	"telegram-bot/solte.lab/pkg/models"
 	"telegram-bot/solte.lab/pkg/storage/emsql"
 	"time"
+
+	"github.com/go-chi/chi/v5"
+	"go.uber.org/zap"
 )
 
 type Admin struct {
@@ -63,6 +64,7 @@ func (a *Admin) handleUserLogin() http.HandlerFunc {
 		req := request{}
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			a.tools.Responder.Error(w, r, http.StatusBadRequest, err)
+			fmt.Println(err)
 			return
 		}
 		user, err := a.tools.Storage.Auth.Authenticate(req.Email, req.Password)
@@ -107,6 +109,7 @@ func (a *Admin) handleUsersCreate() http.HandlerFunc {
 		req := &request{}
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 			a.tools.Responder.Error(w, r, http.StatusBadRequest, err)
+			fmt.Println(err)
 			return
 		}
 
