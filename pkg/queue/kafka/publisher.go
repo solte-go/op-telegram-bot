@@ -3,6 +3,8 @@ package kafka
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"telegram-bot/solte.lab/pkg/config"
 	"telegram-bot/solte.lab/pkg/models"
@@ -113,6 +115,9 @@ func (p *Publisher) PrepareMessage(message interface{}) (*kafka.Message, error) 
 		if err != nil {
 			return nil, err
 		}
+
+		fmt.Println(m)
+
 		return &kafka.Message{
 			TopicPartition: kafka.TopicPartition{Topic: &p.conf.Topic, Partition: kafka.PartitionAny},
 			Key:            []byte(UserMessage),

@@ -1,8 +1,11 @@
 package postgresql
 
 import (
+	"context"
 	"database/sql"
+	"errors"
 	"fmt"
+
 	"telegram-bot/solte.lab/pkg/models"
 
 	e "telegram-bot/solte.lab/pkg/errhandler"
@@ -30,6 +33,33 @@ func (s *PostgresStorage) GetAllUsers() (users []models.User, err error) {
 	return users, nil
 }
 
+func (s *PostgresStorage) GeUsersForInteraction(ctx context.Context) (users []models.User, err error) {
+	defer func() { err = e.WrapIfErr("can't get users from database", err) }()
+
+	query := `SELECT user_name, topic, user_language, seq_offset, chat_id 
+			  	FROM users 
+			  	WHERE interaction=true 
+		      	AND interaction_intensity!=0 
+		      	AND chat_id IS NOT NULL;`
+
+	rows, err := s.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var u models.User
+		if err := rows.Scan(&u.Name, &u.Topic, &u.Language, &u.Offset); err != nil {
+			return nil, err
+		}
+		users = append(users, u)
+	}
+
+	return users, nil
+}
+
 func (s *PostgresStorage) GetUser(user *models.User) (err error) {
 	defer func() { err = e.WrapIfErr("can't get user from database", err) }()
 
@@ -38,7 +68,7 @@ func (s *PostgresStorage) GetUser(user *models.User) (err error) {
 	WHERE user_name = $1;`
 
 	err = s.db.QueryRow(query, user.Name).Scan(&user.Topic, &user.Language)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		err = s.InsertUser(user)
 		if err != nil {
 			return err
@@ -56,11 +86,11 @@ func (s *PostgresStorage) GetUser(user *models.User) (err error) {
 func (s *PostgresStorage) InsertUser(user *models.User) (err error) {
 	defer func() { err = e.WrapIfErr("can't insert user to database", err) }()
 
-	query := `INSERT INTO users (user_name, topic, user_language) values ($1, $2, $3) RETURNING id;`
+	query := `INSERT INTO users (user_name, topic, user_language, chat_id) values ($1, $2, $3, $4) RETURNING id;`
 
 	user.SetDefaults()
 
-	_, err = s.db.Exec(query, user.Name, user.Topic, user.Language)
+	_, err = s.db.Exec(query, user.Name, user.Topic, user.Language, user.ChatID)
 	if err != nil {
 		return err
 	}

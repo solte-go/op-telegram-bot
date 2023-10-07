@@ -1,0 +1,11 @@
+INSERT INTO words (letter, topic, suomi, english, russian) values ('k', 'family', 'kiitos', 'thank you', 'спасибо');
+INSERT INTO words (letter, topic, suomi, english, russian) values ('f', 'family', 'perhe', 'family', 'семья');
+INSERT INTO words (letter, topic, suomi, english, russian) values ('p', 'family', 'äiti', 'mother', 'мама');
+INSERT INTO words (letter, topic, suomi, english, russian) values ('i', 'family', 'isä', 'father', 'папа');
+INSERT INTO words (letter, topic, suomi, english, russian) values ('s', 'family', 'sisko', 'sister', 'сестра');
+INSERT INTO words (letter, topic, suomi, english, russian) values ('s', 'family', 'suku', 'relatives', 'семья, родственники');
+INSERT INTO words (letter, topic, suomi, english, russian) values ('e', 'family', 'eno', 'uncle (mother''s brother)', 'дядя, (брат мамы)');
+INSERT INTO words (letter, topic, suomi, english, russian) values ('e', 'family', 'setä', 'father''s brother', 'дядя (брат папы)');
+INSERT INTO words (letter, topic, suomi, english, russian) values ('e', 'family', 'veli', 'brother', 'брат');
+INSERT INTO words (letter, topic, suomi, english, russian) values ('s', 'family', 'sukupuu', 'family tree', 'семейное дерево');
+INSERT INTO words (letter, topic, suomi, english, russian) values ('l', 'family', 'lapseton', 'childfree (childless)', 'бездетный (чайлдфри)');

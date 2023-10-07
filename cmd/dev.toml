@@ -7,14 +7,14 @@
 
 [kafka_producer]
     connection_name = "kafka_producer"
-    brokers = "192.168.1.136:9092"
+    brokers = "192.168.1.34:9092"
     topic = "new_events"
     timeout = "15s"
     partitions = 1
     push_timeout = "1s"
 
 [kafka_consumer]
-    brokers = "192.168.1.136:9092"
+    brokers = "192.168.1.34:9092"
     topic = "new_events"
     session_timeout = 6000
     batch_size = 100
@@ -26,6 +26,9 @@
 [telegram]
     host = "api.telegram.org"
     token = ""
+
+[scheduler]
+    interval = "5s"
 
 [postgresql.opdb]
     alias = "opdb"

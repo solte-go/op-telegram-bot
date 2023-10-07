@@ -1,6 +1,9 @@
 package storage
 
 import (
+	"context"
+	"database/sql"
+
 	"telegram-bot/solte.lab/pkg/models"
 )
 
@@ -16,7 +19,7 @@ type Storage interface {
 	GetAlphabet() ([]string, error)
 	GetTopics() ([]string, error)
 	GetAllUsers() (users []models.User, err error)
-	//}
+	GeUsersForInteraction(ctx context.Context) (users []models.User, err error)
 
 	//type AdminsContract interface {
 	CreateUser(user *models.Admin) error
@@ -25,6 +28,12 @@ type Storage interface {
 	UpdateUserData(user *models.Admin) error
 	FindBySessionToken(HashedToken string) (*models.Admin, error)
 	AddNewWordsToDataBase(words []models.Words) error
+}
+
+type Repository interface {
+	BeginTx(ctx context.Context, isolation sql.IsolationLevel, readOnly bool) (*sql.Tx, error)
+	HandleError(ctx context.Context, err error, tx *sql.Tx) error
+	CommitTx(ctx context.Context, tx *sql.Tx) error
 }
 
 //type UserContract interface {

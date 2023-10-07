@@ -5,11 +5,12 @@ import (
 	"net/url"
 	"sort"
 	"strings"
+	"time"
+
 	"telegram-bot/solte.lab/pkg/clients/telegram"
 	"telegram-bot/solte.lab/pkg/models"
 	"telegram-bot/solte.lab/pkg/storage"
 	"telegram-bot/solte.lab/pkg/storage/dialect"
-	"time"
 
 	"go.uber.org/zap"
 
@@ -22,6 +23,7 @@ const (
 	CmdHelpRu         = "/helpRu"
 	CmdHelpEn         = "/helpEn"
 	CmdRndWords       = "/words"
+	CmdInteract       = "/interact"
 	CmdTopics         = "/topics"
 	CmdSetTopic       = "/setTopic"
 	CmdSetLanguage    = "/setLang"
@@ -44,6 +46,8 @@ func (r *Responder) doCmd(user *models.User) error {
 		return r.sendHelpEn(user)
 	case CmdRndWords:
 		return r.randomWords(user)
+	case CmdInteract:
+		return r.interactWithUser(user)
 	case CmdPhraseOfTheDay:
 		return r.phraseOfTheDay(user, arg)
 	case CmdTopics:
@@ -55,6 +59,16 @@ func (r *Responder) doCmd(user *models.User) error {
 	default:
 		return r.tg.SendMessage(user.ChatID, msgUnknownCommand)
 	}
+}
+
+func (r *Responder) interactWithUser(user *models.User) (err error) {
+	defer func() { err = e.WrapIfErr("can't execute command: random page", err) }()
+	sendMsg := newMessageSender(user.ChatID, r.tg)
+
+	if err = sendMsg("Haluatko oppia jotain uutta? /joo /ei"); err != nil {
+		return err
+	}
+	return err
 }
 
 func (r *Responder) randomWords(user *models.User) (err error) {
@@ -80,6 +94,7 @@ func (r *Responder) randomWords(user *models.User) (err error) {
 		return err
 	}
 
+	//move to user settings
 	time.Sleep(3 * time.Second)
 
 	// TODO more languages logic

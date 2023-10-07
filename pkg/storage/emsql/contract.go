@@ -56,7 +56,6 @@ type ServiceContract interface {
 }
 
 func New(storage *postgresql.PostgresStorage) OPContract {
-
 	return &OpSQL{
 		st: storage,
 		//cache: cache.New(ctx, storage),

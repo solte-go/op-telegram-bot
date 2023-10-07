@@ -3,26 +3,20 @@ package postgresql
 import (
 	"database/sql"
 	"fmt"
+
+	"golang.org/x/net/context"
 	"telegram-bot/solte.lab/pkg/storage/postgresql/internal"
 
 	"telegram-bot/solte.lab/pkg/config"
 )
 
-//var storagePool map[string]*Storage
-//
-//func GetStorage(alias string) (*Storage, error) {
-//	if storagePool == nil {
-//		return nil, fmt.Errorf("storage pool is empty")
-//	}
-//	storage, ok := storagePool[alias]
-//	if ok {
-//		return storage, nil
-//	}
-//	return nil, fmt.Errorf("storage with alias %s not found", alias)
-//}
+type TransactionHandler interface {
+	TransactionError(ctx context.Context, err error, tx *sql.Tx) error
+}
 
 type PostgresStorage struct {
-	db *sql.DB
+	db      *sql.DB
+	Handler TransactionHandler
 }
 
 func New(conf *config.Postgres) (*PostgresStorage, error) {
@@ -31,16 +25,14 @@ func New(conf *config.Postgres) (*PostgresStorage, error) {
 		return nil, err
 	}
 
-	storage := &PostgresStorage{db: db}
-
-	err = storage.init(conf.OPDB.Alias)
-	if err != nil {
-		return nil, fmt.Errorf("can't initialize storage: %w", err)
+	storage := &PostgresStorage{db: db,
+		Handler: new(TxErrorHandler),
 	}
 
-	//st := make(map[string]*Storage)
-	//storagePool = st
-	//storagePool[conf.OPDB.Alias] = storage
+	//err = storage.init(conf.OPDB.Alias)
+	//if err != nil {
+	//	return nil, fmt.Errorf("can't initialize storage: %w", err)
+	//}
 
 	return storage, nil
 }
@@ -80,6 +72,26 @@ func (s *PostgresStorage) DropTables() error {
 	return nil
 }
 
+func (s *PostgresStorage) BeginTx(ctx context.Context, isolation sql.IsolationLevel, readOnly bool) (*sql.Tx, error) {
+	return s.db.BeginTx(ctx, &sql.TxOptions{
+		Isolation: isolation,
+		ReadOnly:  readOnly,
+	})
+}
+
+func (s *PostgresStorage) HandleError(ctx context.Context, err error, tx *sql.Tx) error {
+	return s.Handler.TransactionError(ctx, err, tx)
+}
+
+func (s *PostgresStorage) CommitTx(ctx context.Context, tx *sql.Tx) error {
+	err := tx.Commit()
+	if err != nil {
+		return s.Handler.TransactionError(ctx, fmt.Errorf("postgres: unable to commit transaction: %v", err), tx)
+	}
+	return nil
+}
+
+// TODO move to migration
 func (s *PostgresStorage) init(alias string) error {
 	q := internal.CreateTables(alias)
 	_, err := s.db.Exec(q)

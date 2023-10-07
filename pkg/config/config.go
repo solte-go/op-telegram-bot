@@ -17,6 +17,7 @@ type Config struct {
 	APIs          *APIs          `mapstructure:"api"`
 	Logging       *Logging       `mapstructure:"logging"`
 	Postgres      *Postgres      `mapstructure:"postgresql"`
+	Scheduler     *Scheduler     `mapstructure:"scheduler"`
 	KafkaProducer *KafkaProducer `mapstructure:"kafka_producer"`
 	KafkaConsumer *KafkaConsumer `mapstructure:"kafka_consumer"`
 	TG            *TG            `mapstructure:"telegram"`
@@ -69,6 +70,10 @@ type PostgresSQLConfig struct {
 	Username string `mapstructure:"username"`
 	Password string `mapstructure:"password"`
 	DBName   string `mapstructure:"dbname"`
+}
+
+type Scheduler struct {
+	Interval time.Duration `mapstructure:"interval"`
 }
 
 type Logging struct {

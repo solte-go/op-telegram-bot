@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"time"
 )
 
 const (
@@ -14,14 +15,15 @@ const (
 var ErrUnsupportedLanguage = errors.New("unsupported language argument")
 
 type User struct {
-	ID       int       `json:"id"`
-	Cmd      string    `json:"cmd"`
-	Name     string    `json:"name"`
-	Language string    `json:"language"`
-	Topic    string    `json:"topic"`
-	ChatID   int       `json:"chat_id"`
-	Offset   int       `json:"offset"`
-	Sequence *Sequence `json:"sequence"`
+	ID              int       `json:"-"`
+	Cmd             string    `json:"cmd"`
+	Name            string    `json:"name"`
+	Language        string    `json:"language"`
+	Topic           string    `json:"topic"`
+	ChatID          int       `json:"chat_id"`
+	Offset          int       `json:"offset"`
+	Sequence        *Sequence `json:"sequence"`
+	NextInteraction time.Time
 }
 
 func (u *User) SetDefaults() {

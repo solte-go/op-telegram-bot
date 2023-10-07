@@ -1,13 +1,14 @@
 CREATE USER devuser;
 CREATE DATABASE telegram_dev;
-GRANT ALL PRIVILEGES ON DATABASE devuser TO telegram_dev;
+GRANT ALL PRIVILEGES ON DATABASE oranssi_dev TO telegram_dev;
 
 
 CREATE TABLE IF NOT EXISTS public.users (
     id SERIAL PRIMARY KEY,
     user_name VARCHAR NOT NULL CONSTRAINT "Users_pk" UNIQUE,
     topic VARCHAR NOT NULL DEFAULT 'all', 
-    user_language VARCHAR NOT NULL DEFAULT 'ru'
+    user_language VARCHAR NOT NULL DEFAULT 'ru',
+    seq_offset INTEGER NOT NULL DEFAULT 0
 );
 
 
