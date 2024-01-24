@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
 	"telegram-bot/solte.lab/pkg/api"
 	"telegram-bot/solte.lab/pkg/api/handlers/metrics"
 	tgClient "telegram-bot/solte.lab/pkg/clients/telegram"

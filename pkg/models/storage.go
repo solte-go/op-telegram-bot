@@ -7,6 +7,7 @@ import (
 	"io"
 	"regexp"
 	"strings"
+
 	e "telegram-bot/solte.lab/pkg/errhandler"
 )
 
@@ -55,8 +56,6 @@ func NewParser() Parser {
 }
 
 func (parser *Parser) Parse(input string) ([]Words, error) {
-	//p := &Parser{}
-
 	lines := strings.Split(input, ";")
 
 	words := make([]Words, 0, len(lines))
@@ -95,6 +94,7 @@ func (parser *Parser) isEmpty() error {
 	}
 	return nil
 }
+
 func (parser *Parser) lineSyntastic() error {
 	if !regex.MatchString(parser.line) {
 		return e.Wrap(parser.line, ErrBadDataInLine)
@@ -102,6 +102,7 @@ func (parser *Parser) lineSyntastic() error {
 	//p.line = strings.Trim(p.line, ";")
 	return nil
 }
+
 func (parser *Parser) normalize() error {
 	parser.line = strings.TrimSpace(
 		strings.ToLower(
@@ -117,6 +118,7 @@ func (parser *Parser) isEnoughArgs() error {
 	}
 	return nil
 }
+
 func (parser *Parser) isArgEmpty() error {
 	for _, word := range parser.words {
 		if word == "" {
@@ -125,6 +127,7 @@ func (parser *Parser) isArgEmpty() error {
 	}
 	return nil
 }
+
 func (parser *Parser) populate() (Words, error) {
 	w := Words{}
 	w.Letter = strings.TrimSpace(parser.words[0][0:1])
